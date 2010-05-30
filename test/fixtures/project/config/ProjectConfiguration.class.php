@@ -12,7 +12,8 @@ class ProjectConfiguration extends sfProjectConfiguration
 {
   public function setup()
   {
-    $this->setPlugins(array('ioDoctrineMenuPlugin', 'sfDoctrinePlugin'));
+    // enable the plugin and its dependent plugins.
+    $this->setPlugins(array('ioDoctrineMenuPlugin', 'sfDoctrinePlugin', 'ioMenuPlugin'));
     $this->setPluginPath('ioDoctrineMenuPlugin', dirname(__FILE__).'/../../../..');
   }
 }
