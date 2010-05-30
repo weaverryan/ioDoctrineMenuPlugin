@@ -12,7 +12,7 @@ class ProjectConfiguration extends sfProjectConfiguration
 {
   public function setup()
   {
-    $this->setPlugins(array('ioDoctrineMenuPlugin'));
+    $this->setPlugins(array('ioDoctrineMenuPlugin', 'sfDoctrinePlugin'));
     $this->setPluginPath('ioDoctrineMenuPlugin', dirname(__FILE__).'/../../../..');
   }
 }
