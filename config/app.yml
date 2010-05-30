@@ -1,0 +1,3 @@
+all:
+  doctrine_menu:
+    i18n_fields: [label]    # If i18n is enabled, the model will generate 18n for these fields

@@ -1,0 +1,48 @@
+ioDoctrineMenuItem:
+  actAs:
+    Timestampable:
+    NestedSet:
+      hasManyRoots:   true
+      rootColumnName: root_id
+# Add i18n conditionally
+<?php if (sfConfig::get('sf_i18n')): ?>
+    I18n:
+      fields:         [<?php echo implode(',', sfConfig::get('app_doctrine_menu_i18n_fields')); ?>]
+<?php endif; ?>
+  columns:
+    name:
+      type:           string(255)
+      notnull:        true
+    root_id:          integer
+    class:            string(255)
+    label:            string(255)
+    route:            string(255)
+    attributes:       string(255)
+    requires_auth:    boolean
+    requires_no_auth: boolean
+  relations:
+    RootMenuItem:
+      local:        root_id
+      class:        ioDoctrineMenuItem
+      onDelete:     CASCADE
+      autoComplete: false
+    Groups:
+      class:        ioDoctrineMenuGroup
+      local:        menu_item_id
+      foreign:      group_id
+      refClass:     ioDoctrineMenuGroup
+      foreignAlias: MenuItems
+
+# many-to-many so that ioDoctrineMenu can have many doctrine groups, used for menu credentials
+ioDoctrineMenuGroup:
+  columns:
+    menu_item_id:
+      primary: true
+      type:    integer
+    group_id:
+      primary: true
+      type:    integer
+  options:
+    symfony:
+      form:    false
+      filter:  false
