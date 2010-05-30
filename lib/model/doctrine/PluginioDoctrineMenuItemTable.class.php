@@ -7,5 +7,90 @@
  */
 class PluginioDoctrineMenuItemTable extends Doctrine_Table
 {
-  
+
+  /**
+   * Persists an ioMenuItem tree to the database.
+   *
+   * Most commonly, you'll persis the root menu item. This will save the
+   * root menu item as a root in the Doctrine nested set and save the
+   * entire menu tree beneath it. For example:
+   *
+   * $menu = new ioMenu();
+   * $menu->setName('root'); // used as the "name" for the root ioDoctrineMenuItem
+   * $menu->addChild('Home', '@homepage');
+   * $menu->addChild('About Us', '@about');
+   * $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
+   * $tbl->persist($menu);
+   *
+   * Alternatively, you can persist just a portion of a tree or persist
+   * and entire menu under an existing Doctrine nested set node:
+   *
+   * $menu = new ioMenuItem('links');
+   * $menu->addChild('Sympal', 'http://www.sympalphp.org');
+   * $menu->addChild('Symfony', 'http://www.symfony-project.org');
+   *
+   * $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
+   * $node = $tbl->findOneByName('Links'); // find an existing node
+   * $tbl->persist($menu, $node);
+   *
+   * @param  ioMenuItem $menu
+   * @param  ioDoctrineMenuItem $parentDoctrineMenu Optional parent node, else
+   *                                                it will save as root
+   * @return ioDoctrineMenuItem
+   * @throws sfException
+   */
+  public function persist(ioMenuItem $menu, ioDoctrineMenuItem $parent = null)
+  {
+    // run a few sanity checks and create the root node
+    if ($parent === null)
+    {
+      // protect against people calling persist on non-root objects, which
+      // would otherwise cause those items to persist as new roots
+      if (!$menu->isRoot())
+      {
+        throw new sfException(
+          'Non-root menu items as root items. Either persist the entire
+          tree or pass an ioDoctrineMenuItem parent as the second argument.'
+        );
+      }
+
+      // Make sure the root has a name
+      if (!$menu->getName())
+      {
+        throw new sfException(
+          'A root object cannot be persisted without a name. Call setName()
+          on the root menu item to set its name'
+        );
+      }
+
+      $root = $this->fetchRootByName($menu->getName());
+      if (!$root)
+      {
+        // create a new root
+        $root = new ioDoctrineMenuItem();
+        $root->name = $menu->getName();
+        $root->save();
+        $this->getTree()->createRoot($root);
+      }
+
+      $parent = $root;
+    }
+
+    // merge in the menu data into the parent menu
+     $parent->persistFromMenuArray($menu->toArray());
+  }
+
+  /**
+   * Retrieves the root menu item specified by the given name
+   *
+   * @param  $name The value of the name field of the menu item
+   * @return ioDoctrineMenuItem|null
+   */
+  public function fetchRootByName($name)
+  {
+    return $this->createQuery('m')
+      ->where('m.lft = ?', 1)
+      ->andWhere('m.name = ?', $name)
+      ->fetchOne();
+  }
 }
