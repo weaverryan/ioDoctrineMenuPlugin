@@ -1,6 +1,8 @@
 ioDoctrineMenuPlugin
 ====================
 
+### This plugin is still in development, check back tomorrow :)
+
 Adds a Doctrine menu model with admin area. The menu model, ioDoctrineMenuItem,
 is used as a datasource for ioMenuItem objects from the ioMenuPlugin.
 
