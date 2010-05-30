@@ -26,20 +26,20 @@ ioDoctrineMenuItem:
       class:        ioDoctrineMenuItem
       onDelete:     CASCADE
       autoComplete: false
-    Groups:
-      class:        ioDoctrineMenuGroup
+    Permissions:
+      class:        sfGuardPermissions
       local:        menu_item_id
-      foreign:      group_id
-      refClass:     ioDoctrineMenuGroup
+      foreign:      permission_id
+      refClass:     ioDoctrineMenuPermission
       foreignAlias: MenuItems
 
-# many-to-many so that ioDoctrineMenu can have many doctrine groups, used for menu credentials
-ioDoctrineMenuGroup:
+# many-to-many so that ioDoctrineMenu can have many doctrine permissions, used for menu credentials
+ioDoctrineMenuPermission:
   columns:
     menu_item_id:
       primary: true
       type:    integer
-    group_id:
+    permission_id:
       primary: true
       type:    integer
   options:
