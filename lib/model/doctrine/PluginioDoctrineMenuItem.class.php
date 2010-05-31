@@ -82,12 +82,22 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
           $doctrineChild = new ioDoctrineMenuItem();
           $doctrineChild->name = $name;
 
-          // move/insert each item last, we should have correct order when finished
-          $doctrineChild->getNode()->insertAsFirstChildOf($this);
-
           // see class note about updating node values
-          //$this->getNode()->setRightValue($this->getNode()->getRightValue() + 2);
-          $doctrineChild->refresh();
+          $doctrineChild->getNode()->insertAsFirstChildOf($this);
+          $this->getNode()->setRightValue($this->getNode()->getRightValue() + 2);
+        }
+
+        /**
+         * For an unknown reason, the order of the children may become
+         * corrupt unless a single (hydrating to object) query to
+         * ioDoctrineMenuItem is made. Removing this will cause failures
+         * starting at 2.5 of the unit test.
+         *
+         * @todo Figure out what's really going on deeper in Doctrine
+         */
+        if ($reorder)
+        {
+          Doctrine_Query::create()->from('ioDoctrineMenuItem')->fetchOne();
         }
 
         // call the persist recursively onto this item and its children

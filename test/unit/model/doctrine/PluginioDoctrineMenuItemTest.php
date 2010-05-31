@@ -107,11 +107,17 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
 
     $t->info('  Check the integrity of the tree.');
     complex_root_menu_check($rt, $t, 2);
+    test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+    root_sanity_check($t, $rt);
 
   $t->info('  2.3 - Persist the tree again with no changes, should still be intact');
     print_test_tree($t);
     persist_menu($t, $rt, $menu);
+
+    $t->info('  Check the integrity of the tree.');
     complex_root_menu_check($rt, $t, 3);
+    test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+    root_sanity_check($t, $rt);
 
   $t->info('  2.4 - Make some normal property changes to the menu, re-persist');
     $menu->setRoute('http://www.sympalphp.org');
@@ -120,7 +126,11 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
     $menu['Parent 1']['Child 2']->setCredentials(array());
     $menu['Parent 1']['Child 3']->setCredentials('c1');
 
+    $t->info('  Check the integrity of the tree.');
     persist_menu($t, $rt, $menu);
+    test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+    root_sanity_check($t, $rt);
+
     $t->is($rt->getRoute(), 'http://www.sympalphp.org', 'The route of rt was updated correctly.');
     $parents = $rt->getNode()->getChildren();                // array(pt1, p2)
     $children1 = $parents[0]->getNode()->getChildren();      // array(ch1, ch2, ch3)
@@ -132,67 +142,52 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
     $t->is(count($children1[1]->Permissions), 0, 'Permissions from ch2 were removed correctly.');
     $t->is(count($children1[2]->Permissions), 1, 'Permissions from ch3 were added correctly.');
 
-// used in 2.1.* to run a few basic checks on the root menu item
-function basic_root_menu_check(ioDoctrineMenuItem $rt, lime_test $t)
-{
-  $t->is($rt->getName(), 'Root li', '->getName() returns the correct value from the menu.');
-  $t->is($rt->getLabel(), 'sympal', '->getLabel() returns the correct value from the menu.');
-  $t->is($rt->getRoute(), 'http://www.sympalphp.org', '->getRoute() returns the correct value from the menu.');
-  $t->is($rt->getAttributes(), 'class="root" id="sympal_menu"', '->getAttributes() returns the string representation of the attributes.');
-  $t->is($rt->getRequiresAuth(), 1, '->getRequiresAuth() returns the correct value from the menu.');
-  $t->is($rt->getRequiresNoAuth(), 0, '->getRequiresNoAuth() returns the correct value from the menu.');
+  $t->info('  2.5 - Add, delete and remove some menu elements');
 
-  $permissions = $rt->Permissions;
-  $t->is(count($permissions), 2, '->Permissions matches two items');
-  $t->is($permissions[0]->name, 'c1', 'The c1 permission was properly set');
-  $t->is($permissions[1]->name, 'c2', 'The c2 permission was properly set');
-}
+    $t->info('    2.5.1 - Add ch5 under pt1');
+      $menu['Parent 1']->addChild('Child 5');
+      persist_menu($t, $rt, $menu);
+      $t->info('  Check the integrity of the tree.');
+      test_total_nodes($t, 9, array(0 => 1, 1 => 2, 2 => 5, 3 => 1));
+      root_sanity_check($t, $rt);
+      check_child_ordering($t, $rt, array(0), array('Child 1', 'Child 2', 'Child 3', 'Child 5'));
 
-// used in 2.2.* to run checks on the integrity of the whole tree
-function complex_root_menu_check(ioDoctrineMenuItem $rt, lime_test $t, $count)
-{
-  $children = $rt->getNode()->getChildren();
+    $t->info('    2.5.2 - Move ch2 after ch5');
+      $ch2 = $menu['Parent 1']['Child 2'];
+      $menu['Parent 1']->removeChild($ch2); // remove ch2
+      $menu['Parent 1']->addChild($ch2); // add it back after ch5
+      persist_menu($t, $rt, $menu);
+      $t->info('  Check the integrity of the tree.');
+      test_total_nodes($t, 9, array(0 => 1, 1 => 2, 2 => 5, 3 => 1));
+      root_sanity_check($t, $rt);
+      check_child_ordering($t, $rt, array(0), array('Child 1', 'Child 3', 'Child 5', 'Child 2'));
 
-  $t->info('    2.'.$count.'.1 - Test the top-level menu integrity');
-    $t->is(count($children), 2, '->getNode()->getChildren() on rt returns 2 children');
-    $t->is($children[0]->name, 'Parent 1', '  The first child is pt1');
-    $t->is($children[1]->name, 'Parent 2', '  The second child is pt2');
-    $t->is($children[0]->getAttributes(), 'class="parent1"', 'The attributes were correctly set on Parent 1');
+    $t->info('    2.5.3 - Remove ch3 (which has no children)');
+      $menu['Parent 1']->removeChild('Child 3');
+      persist_menu($t, $rt, $menu);
+      $t->info('  Check the integrity of the tree.');
+      test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+      root_sanity_check($t, $rt);
+      check_child_ordering($t, $rt, array(0), array('Child 1', 'Child 5', 'Child 2'));
+      $ch3 = Doctrine_Core::getTable('ioDoctrineMenuItem')->findOneByName('Child 3');
+      $t->is(is_null($ch3), true, 'The ch3 menu item was deleted entirely.');
+      die;
 
-    $parent1 = $children[0];
-    $parent2 = $children[1];
+    $t->info('    2.5.4 - Remove ch4 (which has gc1 child)');
+      $menu['Parent 2']->removeChild('Child 4');
+      persist_menu($t, $rt, $menu);
+      $t->info('  Check the integrity of the tree.');
+      test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 3, 3 => 0));
+      root_sanity_check($t, $rt);
+      check_child_ordering($t, $rt, array(1), array());
+      $ch3 = Doctrine_Core::getTable('ioDoctrineMenuItem')->findOneByName('Child 3');
+      $t->is($ch3, null, 'The ch3 menu item was deleted entirely.');
+    
 
-  $t->info('    2.'.$count.'.2 - Test the second-level menu integrity under pt1');
-    $children = $parent1->getNode()->getChildren();
-    $t->is(count($children), 3, '->getNode()->getChildren() on pt1 returns 3 children');
-    $t->is($children[0]->name, 'Child 1', '  The first child is ch1');
-    $t->is($children[1]->name, 'Child 2', '  The second child is ch2');
-    $t->is($children[2]->name, 'Child 3', '  The third child is ch3');
-    $t->is(count($children[1]->Permissions), 2, '  ch2 was given the proper permissions.');
+    $t->info('    d) Add a pt3 under root after pt2');
+    $menu->addChild('Parent 3', 'http://www.doctrine-project.org');
 
-    $t->is($children[0]->getNode()->getChildren(), false, '->getNode()->getChildren() on ch1 returns false');
-    $t->is($children[1]->getNode()->getChildren(), false, '->getNode()->getChildren() on ch2 returns false');
-    $t->is($children[2]->getNode()->getChildren(), false, '->getNode()->getChildren() on ch3 returns false');
+    persist_menu($t, $rt, $menu);
+    test_total_nodes($t, 8, array(0 => 1, 1 => 3, 2 => 4));
 
-  $t->info('    2.'.$count.'.3 - Test the second and third-level menu integrity under pt2');
-    $children = $parent2->getNode()->getChildren();
-    $t->is(count($children), 1, '->getNode()->getChildren() on pt2 returns 1 child');
-    $t->is($children[0]->name, 'Child 4', '  The first child is ch4');
-    $children = $children[0]->getNode()->getChildren();
-    $t->is(count($children), 1, '->getNode()->getChildren() on ch4 returns 1 child');
-    $t->is($children[0]->name, 'Grandchild 1', '  The first child is gc1');
-}
-
-// prints a message about how long a persist operation took
-function persist_menu(lime_test $t, ioDoctrineMenuItem $rt, ioMenuItem $menu)
-{
-  $timer = new sfTimer();
-  $rt->persistFromMenuArray($menu->toArray());
-  $timer->addTime();
-  $rt->refresh();
-  $t->info(sprintf(
-    '### Menu took %s to persist (%s nodes/min)',
-    round($timer->getElapsedTime(), 4),
-    floor(8 * 60 / $timer->getElapsedTime())
-  ));
-}
+    
