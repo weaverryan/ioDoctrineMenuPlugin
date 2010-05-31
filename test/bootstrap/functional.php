@@ -22,3 +22,6 @@ require_once dirname(__FILE__).'/../fixtures/project/config/ProjectConfiguration
 $configuration = ProjectConfiguration::getApplicationConfiguration($app, 'test', isset($debug) ? $debug : true);
 sfContext::createInstance($configuration);
 new sfDatabaseManager($configuration);
+
+// so that all notices will appear
+error_reporting(E_ALL);

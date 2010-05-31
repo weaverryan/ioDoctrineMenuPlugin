@@ -46,7 +46,7 @@ function create_doctrine_test_tree(lime_test $t)
     'rt' => $rt,
     'pt1' => $pt1,
     'pt2' => $pt2,
-    'pt3' => $pt3,
+    'ch1' => $ch1,
   );
 }
 
