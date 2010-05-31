@@ -17,6 +17,20 @@
  */
 abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
 {
+
+  /**
+   * Creates an ioMenuItem tree where this object is the root
+   *
+   * @return ioMenuItem
+   */
+  public function createMenu()
+  {
+    $hier = $this->_getMenuHierarchy();
+    $data = self::_convertHierarchyToMenuArray($hier);
+
+    return ioMenuItem::createFromArray($data);
+  }
+
   /**
    * Merges in the values from the given menu item and saves the object.
    *
@@ -251,5 +265,80 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
     {
       $this->link('Permissions', array_values($permissions));
     }
+  }
+
+  /**
+   * Returns data matching this object in an array, but hydrated into
+   * a menu hierarchy
+   *
+   * @return array
+   */
+  protected function _getMenuHierarchy()
+  {
+    $q = Doctrine_Query::create()
+      ->from('ioDoctrineMenuItem m INDEXBY m.name')
+      ->select('m.name, m.class, m.label, m.route, m.label, m.attributes, m.requires_auth, m.requires_no_auth, m.level, c.name')
+      ->leftJoin('m.Permissions c')
+      ->where('m.root_id = ?', $this['id']);
+
+    /**
+     * The HYDRATE_ARRAY_HIERARCHY method assumes that you're nested set
+     * is returned in a certain order:
+     *  --rt
+     *    --pt1
+     *      --ch1
+     *    --pt2
+     * The above nested set must be returned in this order: rt, pt1, ch1, pt2.
+     * This is accomplished by ordering everything by lft ASC.
+     */
+    $q->orderBy('m.lft ASC');
+
+    return $q->fetchOne(null, Doctrine_Core::HYDRATE_ARRAY_HIERARCHY);
+  }
+
+  /**
+   * Converts the data from getMenuHierarchy into a form usable for import
+   * by ioMenuItem.
+   *
+   * This is roughly opposite to the transformations done when persisting
+   * data in persistFromMenuArray() and _convertMenuData
+   *
+   * @param  array $data The tree array data from getMenuHierarchy()
+   * @return array
+   */
+  protected static function _convertHierarchyToMenuArray($data)
+  {
+    unset($data['level'], $data['id']);
+
+    if (isset($data['Permissions']))
+    {
+      $credentials = array();
+      foreach ($data['Permissions'] as $permission)
+      {
+        $credentials[] = $permission['name'];
+      }
+
+      $data['credentials'] = $credentials;
+      unset($data['Permissions']);
+    }
+
+    // convert the attributes back into an array
+    $data['attributes'] = sfToolkit::stringToArray($data['attributes']);
+
+    // handle the children data
+    if (isset($data['__children']))
+    {
+      $childrenData = array();
+      foreach ($data['__children'] as $childData)
+      {
+        // recurse the children data onto this method
+        $childrenData[$childData['name']] = self::_convertHierarchyToMenuArray($childData);
+      }
+
+      $data['children'] = $childrenData;
+      unset($data['__children']);
+    }
+
+    return $data;
   }
 }
