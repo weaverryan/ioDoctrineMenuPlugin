@@ -32,13 +32,14 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
     $children = isset($data['children']) ? $data['children'] : false;
     unset($data['children']);
 
-    // save the credentials and turn them into sfGuardPermission objects
+    // save the credentials and turn them into a permissions array
     $permissions = $this->_fetchPermissionsArray($data['credentials']);
     unset($data['credentials']);
 
     // import in the raw data
     $data = $this->_convertMenuData($data);
     $this->fromArray($data);
+
 
     // sync the Permissions
     $this->_syncPermissions($permissions);
@@ -51,6 +52,17 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
     {
       $currentChildren = $this->getChildrenIndexedByName();
 
+      // if the list of children is the same and in the same order, don't force a rearrange
+      $reorder = (array_keys($children) !== array_keys($currentChildren));
+
+      /**
+       * Due in part to problems with lft,rgt values not being updated as
+       * nodes are added, reversing the children array and then using
+       * insert/moveAsFirstChildOf (emphasis on first) works whereas
+       * keeping the order and using insert/moveAsLastChildOf renders
+       * unexpected results.
+       */
+      $children = array_reverse($children);
       foreach ($children as $name => $childArr)
       {
         if (isset($currentChildren[$name]))
@@ -58,8 +70,12 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
           $doctrineChild = $currentChildren[$name];
           unset($currentChildren['name']);
 
-          // move/insert each item last, we should have correct order when finished
-          $doctrineChild->getNode()->moveAsLastChildOf($this);
+          // if the children have been changed at all, reorder
+          if ($reorder)
+          {
+            // move/insert each item last, we should have correct order when finished
+            $doctrineChild->getNode()->moveAsFirstChildOf($this);
+          }
         }
         else
         {
@@ -67,10 +83,11 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
           $doctrineChild->name = $name;
 
           // move/insert each item last, we should have correct order when finished
-          $doctrineChild->getNode()->insertAsLastChildOf($this);
+          $doctrineChild->getNode()->insertAsFirstChildOf($this);
 
           // see class note about updating node values
-          $this->getNode()->setRightValue($this->getNode()->getRightValue() + 2);
+          //$this->getNode()->setRightValue($this->getNode()->getRightValue() + 2);
+          $doctrineChild->refresh();
         }
 
         // call the persist recursively onto this item and its children
@@ -121,8 +138,8 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
   }
 
   /**
-   * Returns an array of sfGuardPermissions objects corresponding to the
-   * given array of permission names.
+   * Returns an array of name => id pairs representing the sfGuardPermission
+   * objects that should be added to this menu item.
    *
    * This will create a new sfGuardPermission object if it does not exist.
    *
@@ -143,17 +160,19 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
     }
 
     // fetch the current permissions
-    $guardPermissions = Doctrine_Query::create()
+    $currentPermissions = Doctrine_Query::create()
       ->from('sfGuardPermission p INDEXBY p.name')
-      ->execute();
+      ->select('p.name, p.id')
+      ->whereIn('p.name', $permissions)
+      ->execute(null, Doctrine_Core::HYDRATE_ARRAY);
 
     // loop through the permissions and create any permissions that don't exist
     $permissionsArray = array();
     foreach ($permissions as $permission)
     {
-      if (isset($guardPermissions[$permission]))
+      if (isset($currentPermissions[$permission]))
       {
-        $permissionsArray[$permission] = $guardPermissions[$permission];
+        $permissionsArray[$permission] = $currentPermissions[$permission]['id'];
       }
       else
       {
@@ -161,7 +180,7 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
         $guardPermission = new sfGuardPermission();
         $guardPermission->name = $permission;
         $guardPermission->save();
-        $permissionsArray[$permission] = $guardPermission;
+        $permissionsArray[$permission] = $guardPermission->id;
       }
     }
 
@@ -169,22 +188,27 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
   }
 
   /**
-   * Sets the given array of Permissions on this object and removes any
-   * other permissions not in the array.
+   * Sets the given array of name => id Permission pairs on this menu item
    *
    * @todo Between this and _fetchPermissionsArray, there's duplicate work done
-   * @param  array $permissions An array of sfGuardPermission objects
+   * @param  array $permissions An array of name => id sfGuardPermission pairs
    * @return void
    */
   protected function _syncPermissions(array $permissions)
   {
+    // small optimization
+    if (count($permissions) == 0 && count($this['Permissions']) == 0)
+    {
+      return;
+    }
+
     $unlinks = array();
     foreach ($this['Permissions'] as $permission)
     {
       if (isset($permissions[$permission->getName()]))
       {
         // the permission should remain, remove it, no need to re-link
-        unset($permissions[$permission]);
+        unset($permissions[$permission->getName()]);
       }
       else
       {
@@ -193,13 +217,14 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
       }
     }
 
-    $links = array();
-    foreach ($permissions as $permission)
+    if (count($unlinks))
     {
-      $links[] = $permission['id'];
+      $this->unlink('Permissions', $unlinks);
     }
 
-    $this->unlink('Permissions', $unlinks);
-    $this->link('Permissions', $links);
+    if (count($permissions))
+    {
+      $this->link('Permissions', array_values($permissions));
+    }
   }
 }
