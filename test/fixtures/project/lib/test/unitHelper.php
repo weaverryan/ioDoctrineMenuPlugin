@@ -32,33 +32,56 @@ function create_doctrine_test_tree(lime_test $t)
   $rt->refresh();
 
   $ch1 = new ioDoctrineMenuItem();
-  $ch1->name = 'ch11';
+  $ch1->name = 'ch1';
   $ch1->save();
   $ch1->getNode()->insertAsLastChildOf($pt1);
   $pt1->refresh();
+
+  $ch2 = new ioDoctrineMenuItem();
+  $ch2->name = 'ch2';
+  $ch2->save();
+  $ch2->getNode()->insertAsLastChildOf($pt1);
+  $pt1->refresh();
+
+  $ch3 = new ioDoctrineMenuItem();
+  $ch3->name = 'ch3';
+  $ch3->save();
+  $ch3->getNode()->insertAsLastChildOf($pt1);
+  $pt1->refresh();
+
+  // refresh because adding children to pt1 moved pt2's lft,rgt values
+  $pt2->refresh();
+  $ch4 = new ioDoctrineMenuItem();
+  $ch4->name = 'ch4';
+  $ch4->save();
+  $ch4->getNode()->insertAsLastChildOf($pt2);
+  $pt2->refresh();
+
+  $gc1 = new ioDoctrineMenuItem();
+  $gc1->name = 'gc1';
+  $gc1->save();
+  $gc1->getNode()->insertAsLastChildOf($ch4);
+  $ch4->refresh();
 
   $rt->refresh();
   $pt1->refresh();
   $pt2->refresh();
   $ch1->refresh();
+  $ch2->refresh();
+  $ch3->refresh();
+  $ch4->refresh();
+  $gc1->refresh();
 
   return array(
     'rt' => $rt,
     'pt1' => $pt1,
     'pt2' => $pt2,
     'ch1' => $ch1,
+    'ch2' => $ch2,
+    'ch3' => $ch3,
+    'ch4' => $ch4,
+    'gc1' => $gc1,
   );
-}
-
-// prints the test doctrine tree to the view
-function print_doctrine_test_tree(lime_test $t)
-{
-  $t->info('      Menu Structure   ');
-  $t->info('               rt      ');
-  $t->info('             /    \    ');
-  $t->info('          pt1      pt2 ');
-  $t->info('           |           ');
-  $t->info('          ch1          ');
 }
 
 // creates a root menu entry and optionally clears all of the menu records
