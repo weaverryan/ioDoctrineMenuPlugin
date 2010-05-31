@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(54);
+$t = new lime_test(55);
 $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
 
 $t->info('1 - Add a tree to an existing node. This should have the same effect as using ioDoctrineMenuItem::persistFromMenuArray()');
@@ -29,3 +29,13 @@ $t->info('1 - Persist an entire menu to a new root. This should have the same ef
   root_sanity_check($t, $rt);
   $t->is($rt->getName(), 'Root li', 'The created root has the correct name.');
   $t->is($rt->getAttributes(), 'class="root"', 'The created root has the correct attributes.');
+
+$t->info('2 - Test the whole process. Persist a menu to the database and fetch it back out.');
+  Doctrine_Query::create()->from('ioDoctrineMenuItem')->delete()->execute();
+  $arr = create_test_tree($t);
+  $menu = $arr['menu'];
+  $tbl->persist($menu);
+  $fromDbMenu = $tbl->fetchMenu('Root li');
+
+  $t->info('  2.1 - Compare the original menu with the one stored and then fetched from the db');
+  $t->is($menu->toArray(), $fromDbMenu->toArray(), 'equiv');
