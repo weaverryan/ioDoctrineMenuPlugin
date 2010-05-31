@@ -11,7 +11,12 @@ if (!file_exists($menuItemHelper))
 require_once ($menuItemHelper);
 
 
-// clears the menu database and then creates a test tree
+/**
+ * Clears the menu database and then creates a test tree
+ *
+ * The test tree is equivalent to the ioMenuItem tree created in
+ * create_test_tree() from ioMenuPlugin
+ */
 function create_doctrine_test_tree(lime_test $t)
 {
   $t->info('### Creating test tree.');
@@ -20,31 +25,31 @@ function create_doctrine_test_tree(lime_test $t)
   $rt = create_root('rt', true, array('attributes' => 'class="root"'));
 
   $pt1 = new ioDoctrineMenuItem();
-  $pt1->name = 'pt1';
+  $pt1->name = 'Parent 1';
   $pt1->save();
   $pt1->getNode()->insertAsLastChildOf($rt);
   $rt->refresh();
 
   $pt2 = new ioDoctrineMenuItem();
-  $pt2->name = 'pt2';
+  $pt2->name = 'Parent 2';
   $pt2->save();
   $pt2->getNode()->insertAsLastChildOf($rt);
   $rt->refresh();
 
   $ch1 = new ioDoctrineMenuItem();
-  $ch1->name = 'ch1';
+  $ch1->name = 'Child 1';
   $ch1->save();
   $ch1->getNode()->insertAsLastChildOf($pt1);
   $pt1->refresh();
 
   $ch2 = new ioDoctrineMenuItem();
-  $ch2->name = 'ch2';
+  $ch2->name = 'Child 2';
   $ch2->save();
   $ch2->getNode()->insertAsLastChildOf($pt1);
   $pt1->refresh();
 
   $ch3 = new ioDoctrineMenuItem();
-  $ch3->name = 'ch3';
+  $ch3->name = 'Child 3';
   $ch3->save();
   $ch3->getNode()->insertAsLastChildOf($pt1);
   $pt1->refresh();
@@ -52,13 +57,13 @@ function create_doctrine_test_tree(lime_test $t)
   // refresh because adding children to pt1 moved pt2's lft,rgt values
   $pt2->refresh();
   $ch4 = new ioDoctrineMenuItem();
-  $ch4->name = 'ch4';
+  $ch4->name = 'Child 4';
   $ch4->save();
   $ch4->getNode()->insertAsLastChildOf($pt2);
   $pt2->refresh();
 
   $gc1 = new ioDoctrineMenuItem();
-  $gc1->name = 'gc1';
+  $gc1->name = 'Grandchild 1';
   $gc1->save();
   $gc1->getNode()->insertAsLastChildOf($ch4);
   $ch4->refresh();
