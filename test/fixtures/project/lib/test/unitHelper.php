@@ -143,27 +143,29 @@ function persist_menu(lime_test $t, ioDoctrineMenuItem $rt, ioMenuItem $menu)
 }
 
 // tests the number of total nodes and nodes at each level
-function test_total_nodes(lime_test $t, $total, $perLevelTotal = null)
+function test_total_nodes(lime_test $t, array $perLevelTotal)
 {
   $t->info('    Checking node totals...');
 
-  $nodeTotal = Doctrine_Query::create()
-    ->from('ioDoctrineMenuItem m')
-    ->count();
-  $t->is($nodeTotal, $total, 'The total number of nodes is '.$total);
-
+  $total = 0;
   if ($perLevelTotal !== null)
   {
     foreach ($perLevelTotal as $level => $levelTotal)
     {
-      $total = Doctrine_Query::create()
+      $total += $levelTotal;
+      $realTotal = Doctrine_Query::create()
         ->from('ioDoctrineMenuItem m')
         ->where('m.level = ?', $level)
         ->count();
 
-      $t->is($total, $levelTotal, sprintf('The node count at level %s is %s', $level, $levelTotal));
+      $t->is($realTotal, $levelTotal, sprintf('The node count at level %s is %s', $level, $levelTotal));
     }
   }
+
+  $realTotal = Doctrine_Query::create()
+    ->from('ioDoctrineMenuItem m')
+    ->count();
+  $t->is($realTotal, $total, 'The total number of nodes is '.$total);
 }
 
 // checks for correct lft, rgt values to see if the true was corrupted
@@ -201,7 +203,8 @@ function check_child_ordering(lime_test $t, ioDoctrineMenuItem $rt, $path, array
   }
 
   $childNameArray = array();
-  foreach ($menu->getNode()->getChildren() as $child)
+  $children = $menu->getNode()->getChildren() ? $menu->getNode()->getChildren() : array();
+  foreach ($children as $child)
   {
     $childNameArray[] = $child->getName();
   }

@@ -47,7 +47,14 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
     // finally save the changes (
     $this->save();
 
-    // handle the children, if children were specified
+    /**
+     * The === is important. There is a qualitative difference between not
+     * being passed the children key at all ($children === false) and being
+     * passed an empty children key ($children === array()). In the first
+     * case, we don't care about children, we want to ignore them. In the
+     * second case, we're making the statement that the children should
+     * be empty.
+     */
     if ($children !== false)
     {
       $currentChildren = $this->getChildrenIndexedByName();
@@ -65,10 +72,12 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
       $children = array_reverse($children);
       foreach ($children as $name => $childArr)
       {
+        // find or create the ioDoctrineMenuItem, position it, update it, save it
         if (isset($currentChildren[$name]))
         {
+          // get the ioDoctrineMenuItem and unset it from the array
           $doctrineChild = $currentChildren[$name];
-          unset($currentChildren['name']);
+          unset($currentChildren[$name]);
 
           // if the children have been changed at all, reorder
           if ($reorder)
@@ -102,6 +111,12 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
 
         // call the persist recursively onto this item and its children
         $doctrineChild->persistFromMenuArray($childArr);
+      }
+
+      // any items still in $currentChildren are old, need to be deleted
+      foreach ($currentChildren as $oldDoctrineMenu)
+      {
+        $oldDoctrineMenu->getNode()->delete();
       }
     }
   }

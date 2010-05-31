@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(71);
+$t = new lime_test(171);
 
 $t->info('1 - Test getChildrenIndexedByName().');
   extract(create_doctrine_test_tree($t)); // create the tree and make its vars accessible
@@ -107,7 +107,7 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
 
     $t->info('  Check the integrity of the tree.');
     complex_root_menu_check($rt, $t, 2);
-    test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+    test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
     root_sanity_check($t, $rt);
 
   $t->info('  2.3 - Persist the tree again with no changes, should still be intact');
@@ -116,7 +116,7 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
 
     $t->info('  Check the integrity of the tree.');
     complex_root_menu_check($rt, $t, 3);
-    test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+    test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
     root_sanity_check($t, $rt);
 
   $t->info('  2.4 - Make some normal property changes to the menu, re-persist');
@@ -128,7 +128,7 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
 
     $t->info('  Check the integrity of the tree.');
     persist_menu($t, $rt, $menu);
-    test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+    test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
     root_sanity_check($t, $rt);
 
     $t->is($rt->getRoute(), 'http://www.sympalphp.org', 'The route of rt was updated correctly.');
@@ -148,7 +148,7 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
       $menu['Parent 1']->addChild('Child 5');
       persist_menu($t, $rt, $menu);
       $t->info('  Check the integrity of the tree.');
-      test_total_nodes($t, 9, array(0 => 1, 1 => 2, 2 => 5, 3 => 1));
+      test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 5, 3 => 1));
       root_sanity_check($t, $rt);
       check_child_ordering($t, $rt, array(0), array('Child 1', 'Child 2', 'Child 3', 'Child 5'));
 
@@ -158,7 +158,7 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
       $menu['Parent 1']->addChild($ch2); // add it back after ch5
       persist_menu($t, $rt, $menu);
       $t->info('  Check the integrity of the tree.');
-      test_total_nodes($t, 9, array(0 => 1, 1 => 2, 2 => 5, 3 => 1));
+      test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 5, 3 => 1));
       root_sanity_check($t, $rt);
       check_child_ordering($t, $rt, array(0), array('Child 1', 'Child 3', 'Child 5', 'Child 2'));
 
@@ -166,28 +166,37 @@ $t->info('2 - Test persistFromMenuArray() in a varierty of situations.');
       $menu['Parent 1']->removeChild('Child 3');
       persist_menu($t, $rt, $menu);
       $t->info('  Check the integrity of the tree.');
-      test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
+      test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 4, 3 => 1));
       root_sanity_check($t, $rt);
       check_child_ordering($t, $rt, array(0), array('Child 1', 'Child 5', 'Child 2'));
-      $ch3 = Doctrine_Core::getTable('ioDoctrineMenuItem')->findOneByName('Child 3');
-      $t->is(is_null($ch3), true, 'The ch3 menu item was deleted entirely.');
-      die;
+      $ch3Count = Doctrine_Query::create()->from('ioDoctrineMenuItem m')->where('m.name = ?', 'Child 3')->count();
+      $t->is($ch3Count, 0, 'The ch3 menu item was deleted entirely.');
 
     $t->info('    2.5.4 - Remove ch4 (which has gc1 child)');
       $menu['Parent 2']->removeChild('Child 4');
       persist_menu($t, $rt, $menu);
       $t->info('  Check the integrity of the tree.');
-      test_total_nodes($t, 8, array(0 => 1, 1 => 2, 2 => 3, 3 => 0));
+      test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 3, 3 => 0));
       root_sanity_check($t, $rt);
       check_child_ordering($t, $rt, array(1), array());
-      $ch3 = Doctrine_Core::getTable('ioDoctrineMenuItem')->findOneByName('Child 3');
-      $t->is($ch3, null, 'The ch3 menu item was deleted entirely.');
-    
+      $ch4Count = Doctrine_Query::create()->from('ioDoctrineMenuItem m')->where('m.name = ?', 'Child 4')->count();
+      $gc1Count = Doctrine_Query::create()->from('ioDoctrineMenuItem m')->where('m.name = ?', 'Grandchild 1')->count();
+      $t->is($ch4Count, null, 'The ch4 menu item was deleted entirely.');
+      $t->is($gc1Count, null, 'The gc1 menu item was deleted entirely.');
 
-    $t->info('    d) Add a pt3 under root after pt2');
-    $menu->addChild('Parent 3', 'http://www.doctrine-project.org');
+    $t->info('    2.5.5 - Add a new child (ch6) to pt2.');
+      $menu['Parent 2']->addChild('Child 6');
+      persist_menu($t, $rt, $menu);
+      $t->info('  Check the integrity of the tree.');
+      test_total_nodes($t, array(0 => 1, 1 => 2, 2 => 4, 3 => 0));
+      root_sanity_check($t, $rt);
+      check_child_ordering($t, $rt, array(1), array('Child 6'));
 
-    persist_menu($t, $rt, $menu);
-    test_total_nodes($t, 8, array(0 => 1, 1 => 3, 2 => 4));
+    $t->info('    2.5.6 - Add a pt3 under root after pt2');
+      $menu->addChild('Parent 3', 'http://www.doctrine-project.org');
 
-    
+      persist_menu($t, $rt, $menu);
+      $t->info('  Check the integrity of the tree.');
+      test_total_nodes($t, array(0 => 1, 1 => 3, 2 => 4, 3 => 0));
+      root_sanity_check($t, $rt);
+      check_child_ordering($t, $rt, array(), array('Parent 1', 'Parent 2', 'Parent 3'));
