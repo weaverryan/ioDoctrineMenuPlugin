@@ -17,7 +17,7 @@ function create_doctrine_test_tree(lime_test $t)
   $t->info('### Creating test tree.');
 
   // create the root
-  $rt = create_root('rt');
+  $rt = create_root('rt', true, array('class' => 'root'));
 
   $pt1 = new ioDoctrineMenuItem();
   $pt1->name = 'pt1';
@@ -85,7 +85,7 @@ function create_doctrine_test_tree(lime_test $t)
 }
 
 // creates a root menu entry and optionally clears all of the menu records
-function create_root($name, $clearData = true)
+function create_root($name, $clearData = true, $data = array())
 {
   if ($clearData)
   {
@@ -94,6 +94,7 @@ function create_root($name, $clearData = true)
 
   $rt = new ioDoctrineMenuItem();
   $rt->name = 'rt';
+  $rt->fromArray($data);
   $rt->save();
   Doctrine_Core::getTable('ioDoctrineMenuItem')->getTree()->createRoot($rt);
 
