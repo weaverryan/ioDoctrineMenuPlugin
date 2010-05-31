@@ -11,27 +11,22 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
   /**
    * Persists an ioMenuItem tree to the database.
    *
-   * Most commonly, you'll persis the root menu item. This will save the
-   * root menu item as a root in the Doctrine nested set and save the
-   * entire menu tree beneath it. For example:
+   * Typically, you'll persist your entire menu tree. This will save the root
+   * menu item as a root in Doctrine's nested set with the whole tree under it:
    *
-   * $menu = new ioMenu();
-   * $menu->setName('root'); // used as the "name" for the root ioDoctrineMenuItem
+   * $menu = new ioMenuItem('root');
    * $menu->addChild('Home', '@homepage');
-   * $menu->addChild('About Us', '@about');
+   * Doctrine_Core::getTable('ioDoctrineMenuItem')->persist($menu);
+   *
+   * You can also persist part of a tree or persist a full menu under an
+   * existing Doctrine nested set node:
+   *
+   * $menu->addChild('Links');
+   * $menu['Links']->addChild('Sympal', 'http://www.sympalphp.org');
    * $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
-   * $tbl->persist($menu);
-   *
-   * Alternatively, you can persist just a portion of a tree or persist
-   * and entire menu under an existing Doctrine nested set node:
-   *
-   * $menu = new ioMenuItem('links');
-   * $menu->addChild('Sympal', 'http://www.sympalphp.org');
-   * $menu->addChild('Symfony', 'http://www.symfony-project.org');
-   *
-   * $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
-   * $node = $tbl->findOneByName('Links'); // find an existing node
-   * $tbl->persist($menu, $node);
+   * $node = $tbl->findOneByName('some name'); // find an existing node
+   * // save the Links submenu under the above node
+   * $tbl->persist($menu['Links'], $node);
    *
    * @param  ioMenuItem $menu
    * @param  ioDoctrineMenuItem $parentDoctrineMenu Optional parent node, else
@@ -42,7 +37,7 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
   public function persist(ioMenuItem $menu, ioDoctrineMenuItem $parent = null)
   {
     // run a few sanity checks and create the root node
-    if ($parent === null)
+    if (!$parent)
     {
       // protect against people calling persist on non-root objects, which
       // would otherwise cause those items to persist as new roots
