@@ -51,7 +51,7 @@ function create_doctrine_test_tree(lime_test $t)
 }
 
 // prints the test doctrine tree to the view
-function print_test_doctrine_tree(lime_test $t)
+function print_doctrine_test_tree(lime_test $t)
 {
   $t->info('      Menu Structure   ');
   $t->info('               rt      ');
