@@ -26,23 +26,34 @@ ioDoctrineMenuItem:
       class:        ioDoctrineMenuItem
       onDelete:     CASCADE
       autoComplete: false
+      onDelete:     CASCADE
     Permissions:
-      class:        sfGuardPermissions
+      class:        sfGuardPermission
       local:        menu_item_id
       foreign:      permission_id
       refClass:     ioDoctrineMenuPermission
       foreignAlias: MenuItems
+      onDelete:     CASCADE
 
 # many-to-many so that ioDoctrineMenu can have many doctrine permissions, used for menu credentials
 ioDoctrineMenuPermission:
   columns:
     menu_item_id:
-      primary: true
-      type:    integer
+      primary:  true
+      type:     integer
     permission_id:
-      primary: true
-      type:    integer
+      primary:  true
+      type:     integer
   options:
     symfony:
-      form:    false
-      filter:  false
+      form:     false
+      filter:   false
+  relations:
+    Menu:
+      class:    ioDoctrineMenuItem
+      local:    menu_item_id
+      onDelete: CASCADE
+    Permission:
+      class:    sfGuardPermission
+      local:    permission_id
+      onDelete: CASCADE
