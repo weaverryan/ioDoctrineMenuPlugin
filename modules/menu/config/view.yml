@@ -1,0 +1,7 @@
+all:
+  stylesheets:    ['/ioDoctrineMenuPlugin/css/jquery_nestedsortable.css']
+  javascripts:
+    -             /ioDoctrineMenuPlugin/js/jquery/jquery-1.3.2.min.js
+    -             /ioDoctrineMenuPlugin/js/jquery/interface/interface.js
+    -             /ioDoctrineMenuPlugin/js/jquery/nestedsortable/inestedsortable-1.0.pack.js
+    -             /ioDoctrineMenuPlugin/js/jquery/jquery-nestedsortable.pack.js
