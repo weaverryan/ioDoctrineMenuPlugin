@@ -9,6 +9,29 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
 {
 
   /**
+   * Creates a full ioMenuItem tree from the given $name, which is either:
+   *   * The name of a root menu node
+   *   * An ioMenuItem object that the menu will be sourced from
+   *
+   * @param  string|ioDoctrineMenuItem $name The root node to translate into an ioMenuItem
+   * @return ioMenuItem
+   */
+  public function fetchMenu($name)
+  {
+    if (is_string($name))
+    {
+      $name = $this->fetchRootByName($name);
+    }
+
+    if (!$name)
+    {
+      return null;
+    }
+
+    return $name->createMenu();
+  }
+
+  /**
    * Persists an ioMenuItem tree to the database.
    *
    * Typically, you'll persist your entire menu tree. This will save the root
@@ -73,29 +96,6 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
 
     // merge in the menu data into the parent menu
      $parent->persistFromMenuArray($menu->toArray());
-  }
-
-  /**
-   * Creates a full ioMenuItem tree from the given $name, which is either:
-   *   * The name of a root menu node
-   *   * An ioMenuItem object that the menu will be sourced from
-   *
-   * @param  string|ioDoctrineMenuItem $name The root node to translate into an ioMenuItem
-   * @return ioMenuItem
-   */
-  public function fetchMenu($name)
-  {
-    if (is_string($name))
-    {
-      $name = $this->fetchRootByName($name);
-    }
-
-    if (!$name)
-    {
-      return null;
-    }
-
-    return $name->createMenu();
   }
 
   /**
