@@ -5,3 +5,6 @@
 all:
   doctrine_menu:
     use_i18n:   false
+
+    # The routing prefix to use for the menu admin module
+    module_prefix:  /test/menu

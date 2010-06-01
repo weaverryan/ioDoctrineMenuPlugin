@@ -9,20 +9,29 @@
  */
 class Baseio_doctrine_menuActions extends sfActions
 {
+  /**
+   * The main action that handles menu reordering
+   */
   public function executeReorder(sfWebRequest $request)
   {
     $this->name = $request->getParameter('menu');
   }
 
+  /**
+   * Responds to an ajax call by nested sortable and delivers a json
+   * object of the given tree
+   */
   public function executeJson(sfWebRequest $request)
   {
     $name = $request->getParameter('menu');
-
     $menu = Doctrine::getTable('ioDoctrineMenuItem')->findAllNestedsetJson($name);
 
     return $this->renderText(json_encode($menu));
   }
 
+  /**
+   * Receives the ajax post to save the menu ordering
+   */
   public function executeSavejson(sfWebRequest $request)
   {
     $name = $request->getParameter('menu');
