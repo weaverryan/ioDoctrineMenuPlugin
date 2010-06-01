@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(56);
+$t = new lime_test(60);
 $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
 
 $t->info('1 - Add a tree to an existing node. This should have the same effect as using ioDoctrineMenuItem::persistFromMenuArray()');
@@ -48,3 +48,29 @@ $t->info('4 - Test the whole process. Persist a menu to the database and fetch i
 
   $t->info('  4.1 - Compare the original menu with the one stored and then fetched from the db');
   $t->is($menu->toArray(), $fromDbMenu->toArray(), 'They are equivalent.');
+
+$t->info('5 - Test the cache invalidation');
+  $manager = $configuration
+    ->getPluginConfiguration('ioDoctrineMenuPlugin')
+    ->getMenuManager();
+  $cacheKey = md5('Root li');
+  Doctrine_Query::create()->from('ioDoctrineMenuItem')->delete()->execute();
+  $arr = create_doctrine_test_tree($t);
+  $rt = $arr['rt'];
+
+  $t->info('  5.1 - Retrieve the menu through the menu manager, it should set the cache.');
+  $menu = $manager->getMenu('Root li');
+  $t->is($manager->getCacheDriver()->has($cacheKey), true, 'Retrieving the menu sets the cache on the manager');
+
+  $t->info('  5.2 - Change the root node and save, see that the cache cleared.');
+  $rt->setLabel('Changed label');
+  $rt->save();
+  $t->is($manager->getCacheDriver()->has($cacheKey), false, 'The cache is now unset.');
+
+  $t->info('  5.3 - Re-put the cache, modify a child element, and see that the cache clears.');
+  $menu = $manager->getMenu('Root li');
+  $t->is($manager->getCacheDriver()->has($cacheKey), true, 'Retrieving the menu sets the cache on the manager');
+  $children = $rt->getNode()->getChildren();
+  $children[0]->setRoute('http://www.doctrine-project.org');
+  $children[0]->save();
+  $t->is($manager->getCacheDriver()->has($cacheKey), false, 'The cache is now unset.');

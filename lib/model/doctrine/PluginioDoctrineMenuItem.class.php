@@ -341,4 +341,23 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
 
     return $data;
   }
+
+  /**
+   * Post save to attempt to clear the menu cache.
+   *
+   * If using different cache driver between multiple applications, this
+   * will only clear the cache for the current application.
+   *
+   * @return void
+   */
+  public function postSave($event)
+  {
+    if (sfProjectConfiguration::hasActive())
+    {
+      sfProjectConfiguration::getActive()
+        ->getPluginConfiguration('ioDoctrineMenuPlugin')
+        ->getMenuManager()
+        ->clearCache($this);
+    }
+  }
 }
