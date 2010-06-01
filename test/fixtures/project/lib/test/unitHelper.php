@@ -22,7 +22,7 @@ function create_doctrine_test_tree(lime_test $t)
   $t->info('### Creating test tree.');
 
   // create the root
-  $rt = create_root('rt', true, array('name' => 'Root li', 'attributes' => 'class="root"'));
+  $rt = create_root('Root li', true, array('attributes' => 'class="root"'));
 
   $pt1 = new ioDoctrineMenuItem();
   $pt1->name = 'Parent 1';
@@ -98,7 +98,7 @@ function create_root($name, $clearData = true, $data = array())
   }
 
   $rt = new ioDoctrineMenuItem();
-  $rt->name = 'rt';
+  $rt->name = $name;
   $rt->fromArray($data);
   $rt->save();
   Doctrine_Core::getTable('ioDoctrineMenuItem')->getTree()->createRoot($rt);
