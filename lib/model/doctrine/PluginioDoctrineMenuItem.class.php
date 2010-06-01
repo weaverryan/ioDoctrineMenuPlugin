@@ -11,7 +11,7 @@
  * a lot of refresh() calls through the code. In some places in Doctrine_Node_NestedSet,
  * you can see commented out code that we use in places here.
  * 
- * @package    ioDoctrineMenuItemPliugin
+ * @package    ioDoctrineMenuItemPlugin
  * @subpackage Doctrine_Record
  * @author     Ryan Weaver <ryan.weaver@iostudio.com>
  */
