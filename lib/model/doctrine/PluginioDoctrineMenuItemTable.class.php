@@ -111,4 +111,115 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
       ->andWhere('m.name = ?', $name)
       ->fetchOne();
   }
+  
+
+  /**
+   * Return a JSON-encoded nested set array of available menus
+   *
+   * @param string $orgId
+   * @param Doctrine_Collection $useritem
+   * @return array|false
+   */
+  public function findAllNestedsetJson($name)
+  {
+    $root = $this->fetchRootByName($name);
+    
+    $children = $root->getNode()->getDescendants();
+    
+    // Generate a JSON-encoded Nested Set Array
+    if (0 < $children->count())
+    {
+      $itemResult = $children->toArray();
+
+      $itemArray = array();
+      $itemArray['requestFirstIndex'] = 0;
+      $itemArray['firstIndex'] = 0;
+      $itemArray['count'] = count($itemResult);
+      $itemArray['columns'] = array("&ldquo;$name&rdquo;");
+
+      $items = array();
+      foreach ($itemResult as $item)
+      {
+        $jsonItem = array(
+            'id'    => $item['id'], 
+            'level' => $item['level'],
+            'info'  => array('<strong>'.$item['name'].'</strong>'));
+
+        $items[] = $jsonItem;
+      }
+
+      // Set Nest Level
+      $itemArray['items'] = array_values(ioDoctrineMenuToolkit::nestify($items, 1));
+
+      return $itemArray;
+    }
+
+    return false;
+  }
+  
+  /**
+   * Clear a tree based on a root id.  Leave the root node intact
+   *
+   * @param string $name - the name id to match the branch on
+   * @return void
+   * @author Brent Shaffer
+   */
+  public function clearTree($root)
+  {
+    $nodes = $this->createQuery()
+                  ->where('root_id = ?', $root['id'])
+                  ->andWhere('level != ?', 0)
+                  ->execute();
+
+    foreach ($nodes as $node)
+    {
+      $node->getNode()->detach();
+      $node['level'] = null;
+      $node->save();
+    }
+  }
+
+  /**
+   * builds a tree from a nested array.
+   *
+   * @param string $arr 
+   * @param string $orgId 
+   * @return void
+   * @author Brent Shaffer
+   */
+  public function restoreTreeFromNestedArray($arr, $name)
+  {
+    $root = $this->fetchRootByName($name);
+
+    $this->clearTree($root);
+
+    Doctrine::getTable('ioDoctrineMenuItem')->getTree()->createRoot($root);
+    
+    $this->restoreBranchFromNestedArray(array('id' => $root['id'], 'children' => $arr));
+  }
+  
+  /**
+   * recursive function to create a nested set from an array
+   *
+   * @param string $arr
+   * @return void
+   * @author Brent Shaffer
+   */
+  public function restoreBranchFromNestedArray($arr)
+  {
+    $parent = Doctrine::getTable('ioDoctrineMenuItem')->findOneById($arr['id']);
+
+    if (isset($arr['children'])) 
+    {
+      foreach ($arr['children'] as $childArr) 
+      {
+        $child = Doctrine::getTable('ioDoctrineMenuItem')->findOneById($childArr['id']);
+        $child->getNode()->insertAsLastChildOf($parent);
+        $this->restoreBranchFromNestedArray($childArr);
+        $parent->refresh();
+      }
+    }
+
+    return $parent;
+  }
 }
