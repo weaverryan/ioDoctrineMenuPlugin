@@ -76,6 +76,29 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
   }
 
   /**
+   * Creates a full ioMenuItem tree from the given $name, which is either:
+   *   * The name of a root menu node
+   *   * An ioMenuItem object that the menu will be sourced from
+   *
+   * @param  string|ioDoctrineMenuItem $name The root node to translate into an ioMenuItem
+   * @return ioMenuItem
+   */
+  public function fetchMenu($name)
+  {
+    if (is_string($name))
+    {
+      $name = $this->fetchRootByName($name);
+    }
+
+    if (!$name)
+    {
+      return null;
+    }
+
+    return $name->createMenu();
+  }
+
+  /**
    * Retrieves the root menu item specified by the given name
    *
    * @param  $name The value of the name field of the menu item
