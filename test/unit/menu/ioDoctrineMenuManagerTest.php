@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(7);
+$t = new lime_test(11);
 
 $manager = new ioDoctrineMenuManager();
 
@@ -18,7 +18,7 @@ $t->info('1 - Test the basic getters and setters.');
   $t->is(get_class($manager->getCacheDriver()), 'sfFileCache', 'The cache driver was set correctly.');
 
 $t->info('2 - Retrieve a menu from the manager');
-  create_doctrine_test_tree($t);
+  $docArr = create_doctrine_test_tree($t);
   $cacheKey = md5('Root li');
 
   $t->info('  2.1 - Retrieve a menu, no cache is set at first.');
@@ -37,4 +37,16 @@ $t->info('2 - Retrieve a menu from the manager');
 
   $menu = $manager->getMenu('Root li');
   $t->is($menu->getRoute(), 'http://www.sympalphp.org', 'The manager correctly retrieves from the cache.');
-  
+
+  $t->info('  2.4 - Retrieve a non-existent menu.');
+  $t->is($manager->getMenu('fake'), null, '->getMenu() with a non-existent menu name returns null.');
+
+$t->info('3 - Test ->clearCache() method.');
+  $cache->set('cache1', 'cache1');
+  $cache->set('cache2', 'cache3');
+  $t->is($cache->has($cacheKey), true, 'The menu cache exists to start.');
+  $manager->clearCache($docArr['rt']);
+  $t->is($cache->has($cacheKey), false, '->clearCache() removes the cache entry.');
+
+  $manager->clearCache();
+  $t->is($cache->has('cache1') || $cache->has('cache1'), false, '->clearCache() with no argument cleared all of the cache.');

@@ -92,4 +92,28 @@ class ioDoctrineMenuManager
       $this->getCacheDriver()->set($cacheKey, $value);
     }
   }
+
+  /**
+   * Clears all cache entries related to the given menu item
+   *
+   * If $menu is null, all the cache will be cleared.
+   *
+   * @param ioDoctrineMenuItem|null $menu The item for which to clear the cache
+   * @return void
+   */
+  public function clearCache(ioDoctrineMenuItem $menu = null)
+  {
+    if ($menu)
+    {
+      // get the root, the cache is based off of it
+      $menu->refreshRelated('RootMenuItem');
+      $menu = $menu['RootMenuItem'];
+      $cacheKey = md5($menu->getName());
+      $this->getCacheDriver()->remove($cacheKey);
+    }
+    else
+    {
+      $this->getCacheDriver()->clean();
+    }
+  }
 }
