@@ -1,13 +1,19 @@
 <?php
 
 /**
- * menu actions.
+ * Plugin configuration
  *
  * @package    ioDoctrineMenuPlugin
- * @subpackage menu
+ * @subpackage actions
+ * @author     Brent Shaffer <bshafs@gmail.com>
  */
-class menuActions extends sfActions
+class Baseio_doctrine_menuActions extends sfActions
 {
+  public function executeReorder(sfWebRequest $request)
+  {
+    $this->name = $request->getParameter('menu');
+  }
+
   public function executeJson(sfWebRequest $request)
   {
     $name = $request->getParameter('menu');
@@ -20,7 +26,7 @@ class menuActions extends sfActions
   public function executeSavejson(sfWebRequest $request)
   {
     $name = $request->getParameter('menu');
-    
+
     if ($nestedSet = $request->getParameter('nested-sortable-widget'))
     {
       // Start with the root
@@ -28,12 +34,7 @@ class menuActions extends sfActions
 
       return true;
     }
-    
-    return false;
-  }
 
-  public function executeIndex(sfWebRequest $request)
-  {
-    $this->name = $request->getParameter('menu');
+    return false;
   }
 }
