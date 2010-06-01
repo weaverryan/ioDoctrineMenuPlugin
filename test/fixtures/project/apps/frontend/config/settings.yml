@@ -33,3 +33,6 @@ all:
 
     # Enable the database manager
     use_database:           ##USE_DATABASE##
+    i18n:                   true
+
+    enabled_modules:        [default, io_doctrine_menu]

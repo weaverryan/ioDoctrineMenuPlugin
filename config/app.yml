@@ -1,6 +1,10 @@
 all:
   doctrine_menu:
-    i18n_fields: [label]    # If i18n is enabled, the model will generate 18n for these fields
+    # If enabled, label will become an i18n field
+    use_i18n: false
+
+    # The routing prefix to use for the menu admin module
+    module_prefix:  /admin/menu
 
     cache:
       enabled:  true

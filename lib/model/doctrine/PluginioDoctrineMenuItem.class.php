@@ -277,9 +277,19 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
   {
     $q = Doctrine_Query::create()
       ->from('ioDoctrineMenuItem m INDEXBY m.name')
-      ->select('m.name, m.class, m.label, m.route, m.label, m.attributes, m.requires_auth, m.requires_no_auth, m.level, c.name')
+      ->select('m.name, m.class, m.label, m.route, m.attributes, m.requires_auth, m.requires_no_auth, m.level, c.name')
       ->leftJoin('m.Permissions c')
       ->where('m.root_id = ?', $this['id']);
+
+    if ($this->getTable()->isI18n())
+    {
+      $q->leftJoin('m.Translation t');
+      $q->addSelect('t.label');
+    }
+    else
+    {
+      $q->addSelect('m.label');
+    }
 
     /**
      * The HYDRATE_ARRAY_HIERARCHY method assumes that you're nested set
@@ -320,6 +330,12 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
 
       $data['credentials'] = $credentials;
       unset($data['Permissions']);
+    }
+
+    if (isset($data['Translation']))
+    {
+      $data['label'] = $data['Translation']['label'];
+      unset($data['Translation']);
     }
 
     // convert the attributes back into an array

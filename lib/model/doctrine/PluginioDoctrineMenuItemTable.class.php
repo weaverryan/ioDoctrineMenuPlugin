@@ -222,4 +222,14 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
 
     return $parent;
   }
+
+  /**
+   * Whether or not this class implements I18n
+   *
+   * @return boolean
+   */
+  public function isI18n()
+  {
+    return $this->hasTemplate('Doctrine_Template_I18n');
+  }
 }
