@@ -1,3 +1,9 @@
 all:
   doctrine_menu:
     i18n_fields: [label]    # If i18n is enabled, the model will generate 18n for these fields
+
+    cache:
+      enabled:  true
+      class:    sfFileCache
+      options:
+        cache_dir:  <?php echo sfConfig::get('sf_app_cache_dir') ?>/io_doctrine_menu
