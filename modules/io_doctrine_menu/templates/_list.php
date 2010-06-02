@@ -2,4 +2,4 @@
   <div id="nested-set"></div>
 </div>
 
-<?php include_partial('io_doctrine_menu/javascripts.js', array('name' => $name)) ?>
+<?php include_partial('io_doctrine_menu/javascripts.js', array('menu' => $menu)) ?>

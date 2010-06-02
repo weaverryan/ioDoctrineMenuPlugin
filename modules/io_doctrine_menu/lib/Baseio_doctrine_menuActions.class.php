@@ -14,8 +14,7 @@ class Baseio_doctrine_menuActions extends sfActions
    */
   public function executeReorder(sfWebRequest $request)
   {
-    $menu = $this->getRoute()->getObject();
-    $this->name = $menu['name'];
+    $this->menu = $this->getRoute()->getObject();
   }
 
   /**

@@ -1,6 +1,6 @@
 <div id="sf_admin_container" class="clearfix">
 
-  <h1 class="admin-title">Menus</h1>
+  <h1 class="admin-title">Reorder Menu "<?php echo $menu->name ?>"</h1>
 
   <div id="sf_admin_content">
     <div id="sf_admin_actions_container">
@@ -8,7 +8,7 @@
         <li class="sf_admin_action_new"><?php echo link_to('New', 'io_doctrine_menu_new') ?></li>
       </ul>
 
-      <?php include_partial('io_doctrine_menu/list', array('name' => $name)) ?>
+      <?php include_partial('io_doctrine_menu/list', array('menu' => $menu)) ?>
     </div>
 
   </div>
