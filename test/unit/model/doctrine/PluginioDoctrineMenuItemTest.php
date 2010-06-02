@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(182);
+$t = new lime_test(183);
 
 $t->info('1 - Test getChildrenIndexedByName().');
   extract(create_doctrine_test_tree($t)); // create the tree and make its vars accessible
@@ -251,3 +251,106 @@ $t->info('3 - Test createMenu() to create a new ioMenuItem tree from the databas
     // just doing in stages so its more obvious when something fails
     $t->is($menu->toArray(false), $matchingMenu->toArray(false), 'The menus match non-recursively.');
     $t->is($menu->toArray(), $matchingMenu->toArray(), 'The full menus match recursively.');
+
+$t->info('4 - Test generateNestedSortableArray()');
+  Doctrine_Query::create()->from('ioDoctrineMenuItem')->delete()->execute();
+  $arr = create_doctrine_test_tree($t);
+  $rt = $arr['rt'];
+
+  $expected = array (
+    'requestFirstIndex' => 0,
+    'firstIndex' => 0,
+    'count' => 7,
+    'columns' =>
+    array (
+      '&ldquo;Root li&rdquo;',
+    ),
+    'items' =>
+    array (
+      array (
+        'id' => $arr['pt1']->id,
+        'level' => '1',
+        'info' =>
+        array (
+          '<strong>Parent 1</strong>',
+        ),
+        'children' =>
+        array (
+          array (
+            'id' => $arr['ch1']->id,
+            'level' => '2',
+            'info' =>
+            array (
+              '<strong>Child 1</strong>',
+            ),
+          ),
+          array (
+            'id' => $arr['ch2']->id,
+            'level' => '2',
+            'info' =>
+            array (
+              '<strong>Child 2</strong>',
+            ),
+          ),
+          array (
+            'id' => $arr['ch3']->id,
+            'level' => '2',
+            'info' =>
+            array (
+              '<strong>Child 3</strong>',
+            ),
+          ),
+        ),
+      ),
+      array (
+        'id' => $arr['pt2']->id,
+        'level' => '1',
+        'info' =>
+        array (
+          '<strong>Parent 2</strong>',
+        ),
+        'children' =>
+        array (
+          array (
+            'id' => $arr['ch4']->id,
+            'level' => '2',
+            'info' =>
+            array (
+              '<strong>Child 4</strong>',
+            ),
+            'children' =>
+            array (
+              array (
+                'id' => $arr['gc1']->id,
+                'level' => '3',
+                'info' =>
+                array (
+                  '<strong>Grandchild 1</strong>',
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  $result = $rt->generateNestedSortableArray();
+
+  /**
+   * If the final test doesn't pass, these could be helpful for debugging why:
+  $t->is($result['count'], 7, '$result[count] = 7 for the 7 children under root.');
+  $t->is($result['columns'], array('&ldquo;Root li&rdquo;'), '$result[columns] = array(Root li) .');
+
+  $t->is(count($result['items']), 2, '$result[items] count is 2 (pt1, pt2).');
+  $t->is(count($result['items'][0]['children']), 3, '$result[items][0][items] count is 3 (ch1, ch2, ch3).');
+  $t->is(count($result['items'][1]['children']), 1, '$result[items][1][items] count is 1 (ch4).');
+
+  $t->is($result['items'][0]['id'], $arr['pt1']->id, '$result[items][0][id] is pt1\'s id');
+  $t->is($result['items'][0]['level'], 1, '$result[items][0][level] is 1');
+  $t->is($result['items'][0]['info'], array('<strong>Parent 1</strong>'), '$result[items][0][info] is array(Parent 1)');
+
+  $t->is($result['items'][0]['children'][0]['level'], 2, '$result[items][0][children][0][level] is 2');
+  */
+
+  $t->is($result['items'][0], $expected['items'][0], '->generateNestedSortableArray() returns the correctly formatted array.');

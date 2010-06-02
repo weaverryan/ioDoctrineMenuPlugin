@@ -112,51 +112,6 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
       ->fetchOne();
   }
   
-
-  /**
-   * Return a JSON-encoded nested set array of available menus
-   *
-   * @param string $orgId
-   * @param Doctrine_Collection $useritem
-   * @return array|false
-   */
-  public function findAllNestedsetJson($name)
-  {
-    $root = $this->fetchRootByName($name);
-    
-    $children = $root->getNode()->getDescendants();
-    
-    // Generate a JSON-encoded Nested Set Array
-    if (0 < $children->count())
-    {
-      $itemResult = $children->toArray();
-
-      $itemArray = array();
-      $itemArray['requestFirstIndex'] = 0;
-      $itemArray['firstIndex'] = 0;
-      $itemArray['count'] = count($itemResult);
-      $itemArray['columns'] = array("&ldquo;$name&rdquo;");
-
-      $items = array();
-      foreach ($itemResult as $item)
-      {
-        $jsonItem = array(
-            'id'    => $item['id'], 
-            'level' => $item['level'],
-            'info'  => array('<strong>'.$item['name'].'</strong>'));
-
-        $items[] = $jsonItem;
-      }
-
-      // Set Nest Level
-      $itemArray['items'] = array_values(ioDoctrineMenuToolkit::nestify($items, 1));
-
-      return $itemArray;
-    }
-
-    return false;
-  }
-  
   /**
    * Clear a tree based on a root id.  Leave the root node intact
    *
@@ -167,9 +122,9 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
   public function clearTree($root)
   {
     $nodes = $this->createQuery()
-                  ->where('root_id = ?', $root['id'])
-                  ->andWhere('level != ?', 0)
-                  ->execute();
+      ->where('root_id = ?', $root['id'])
+      ->andWhere('level != ?', 0)
+      ->execute();
 
     foreach ($nodes as $node)
     {

@@ -376,4 +376,52 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
         ->clearCache($this);
     }
   }
+
+  /**
+   * Return a JSON-encoded nested set array of this menu
+   *
+   * This assists in the json response expected by jQuery Nested Sortable. 
+   *
+   * @return array|false  A nested array ready to be converted to json
+   * @author Brent Shaffer
+   */
+  public function generateNestedSortableArray()
+  {
+    if (!$this->getNode()->isRoot())
+    {
+      throw new sfException('ioDoctrineMenuItem::findAllNestedsetJson() can only be called on root nodes.');
+    }
+
+    $children = $this->getNode()->getDescendants();
+
+    // Generate a JSON-encoded Nested Set Array
+    if ($children->count() > 0)
+    {
+      $childrenArr = $children->toArray();
+
+      $itemArray = array();
+      $itemArray['requestFirstIndex'] = 0;
+      $itemArray['firstIndex'] = 0;
+      $itemArray['count'] = count($childrenArr);
+      $itemArray['columns'] = array('&ldquo;'.$this->name.'&rdquo;');
+
+      $items = array();
+      foreach ($childrenArr as $childArr)
+      {
+        $jsonItem = array(
+          'id'    => $childArr['id'],
+          'level' => $childArr['level'],
+          'info'  => array('<strong>'.$childArr['name'].'</strong>')
+        );
+        $items[] = $jsonItem;
+      }
+
+      // Set Nest Level
+      $itemArray['items'] = array_values(ioDoctrineMenuToolkit::nestify($items, 1));
+
+      return $itemArray;
+    }
+
+    return false;
+  }
 }
