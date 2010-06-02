@@ -14,7 +14,8 @@ class Baseio_doctrine_menuActions extends sfActions
    */
   public function executeReorder(sfWebRequest $request)
   {
-    $this->name = $request->getParameter('menu');
+    $menu = $this->getRoute()->getObject();
+    $this->name = $menu['name'];
   }
 
   /**
@@ -23,7 +24,7 @@ class Baseio_doctrine_menuActions extends sfActions
    */
   public function executeJson(sfWebRequest $request)
   {
-    $name = $request->getParameter('menu');
+    $name = $request->getParameter('name');
     $menu = Doctrine::getTable('ioDoctrineMenuItem')->findAllNestedsetJson($name);
 
     return $this->renderText(json_encode($menu));
@@ -34,7 +35,7 @@ class Baseio_doctrine_menuActions extends sfActions
    */
   public function executeSavejson(sfWebRequest $request)
   {
-    $name = $request->getParameter('menu');
+    $name = $request->getParameter('name');
 
     if ($nestedSet = $request->getParameter('nested-sortable-widget'))
     {

@@ -67,7 +67,7 @@ class ioDoctrineMenuPluginConfiguration extends sfPluginConfiguration
       'requirements'          => array(),
     )));
 
-    $event->getSubject()->prependRoute('io_doctrine_menu_reorder', new sfRoute(
+    $event->getSubject()->prependRoute('io_doctrine_menu_reorder', new sfDoctrineRoute(
       $prefix.'/reorder/:name',
       array(
         'module'  => 'io_doctrine_menu',
@@ -75,10 +75,14 @@ class ioDoctrineMenuPluginConfiguration extends sfPluginConfiguration
       ),
       array(
         'sf_method' => array('get'),
+      ),
+      array(
+        'model' => 'ioDoctrineMenuItem',
+        'type'  => 'object',
       )
     ));
 
-    $event->getSubject()->prependRoute('io_doctrine_menu_reorder_json', new sfRoute(
+    $event->getSubject()->prependRoute('io_doctrine_menu_reorder_json', new sfDoctrineRoute(
       $prefix.'/reorder/json/:name',
       array(
         'module'  => 'io_doctrine_menu',
@@ -86,10 +90,14 @@ class ioDoctrineMenuPluginConfiguration extends sfPluginConfiguration
       ),
       array(
         'sf_method' => array('get'),
+      ),
+      array(
+        'model' => 'ioDoctrineMenuItem',
+        'type'  => 'object',
       )
     ));
 
-    $event->getSubject()->prependRoute('io_doctrine_menu_reorder_save', new sfRoute(
+    $event->getSubject()->prependRoute('io_doctrine_menu_reorder_save', new sfDoctrineRoute(
       $prefix.'/reorder/save/:name',
       array(
         'module'  => 'io_doctrine_menu',
@@ -97,6 +105,10 @@ class ioDoctrineMenuPluginConfiguration extends sfPluginConfiguration
       ),
       array(
         'sf_method' => array('post'),
+      ),
+      array(
+        'model' => 'ioDoctrineMenuItem',
+        'type'  => 'object',
       )
     ));
   }
