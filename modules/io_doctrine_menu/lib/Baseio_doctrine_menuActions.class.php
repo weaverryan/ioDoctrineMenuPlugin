@@ -23,23 +23,23 @@ class Baseio_doctrine_menuActions extends sfActions
    */
   public function executeJson(sfWebRequest $request)
   {
-    $name = $request->getParameter('name');
-    $menu = Doctrine::getTable('ioDoctrineMenuItem')->findAllNestedsetJson($name);
+    $menu = $this->getRoute()->getObject();
+    $arr = $menu->generateNestedSortableArray();
 
-    return $this->renderText(json_encode($menu));
+    return $this->renderText(json_encode($arr));
   }
 
   /**
    * Receives the ajax post to save the menu ordering
    */
-  public function executeSavejson(sfWebRequest $request)
+  public function executeSaveJson(sfWebRequest $request)
   {
-    $name = $request->getParameter('name');
+    $menu = $this->getRoute()->getObject();
 
     if ($nestedSet = $request->getParameter('nested-sortable-widget'))
     {
       // Start with the root
-      Doctrine::getTable("ioDoctrineMenuItem")->restoreTreeFromNestedArray($nestedSet['items'], $name);
+      Doctrine::getTable("ioDoctrineMenuItem")->restoreTreeFromNestedArray($nestedSet['items'], $menu);
 
       return true;
     }
