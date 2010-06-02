@@ -238,5 +238,5 @@ function check_child_ordering(lime_test $t, ioDoctrineMenuItem $rt, $path, array
     $childNameArray[] = $child->getName();
   }
 
-  $t->is($childNameArray, $ordering, 'The children are ordered correctly: ', implode(',', $childNameArray));
+  $t->is($childNameArray, $ordering, 'The children are ordered correctly: '. implode(',', $childNameArray));
 }
