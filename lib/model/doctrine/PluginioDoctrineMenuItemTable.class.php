@@ -149,12 +149,6 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
       throw new sfException('ioDoctrineMenuItemTable::restoreTreeFromNestedArray() must be called using a root node.');
     }
 
-    // remove all of the nodes from the tree
-    $this->clearTree($root);
-
-    // reestablish the root
-    $this->getTree()->createRoot($root);
-
     // put the nodes back on
     $this->restoreBranchFromNestedArray(array('menu' => $root, 'children' => $arr));
   }
@@ -172,10 +166,12 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
 
     if (isset($arr['children']))
     {
-      foreach ($arr['children'] as $childArr)
+      // for details on why we do this, see ioDoctrineMenuItem::persistFromMenuArray()
+      $children = array_reverse($arr['children']);
+      foreach ($children as $childArr)
       {
         $child = $this->find($childArr['id']);
-        $child->getNode()->insertAsLastChildOf($parent);
+        $child->getNode()->moveAsFirstChildOf($parent);
 
         // put the child object into the array
         $childArr['menu'] = $child;
@@ -183,7 +179,6 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
 
         // recurse down and ultimately refresh the parent
         $this->restoreBranchFromNestedArray($childArr);
-        $parent->refresh();
       }
     }
 
