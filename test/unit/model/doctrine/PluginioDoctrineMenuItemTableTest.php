@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(60);
+$t = new lime_test(68);
 $tbl = Doctrine_Core::getTable('ioDoctrineMenuItem');
 
 $t->info('1 - Add a tree to an existing node. This should have the same effect as using ioDoctrineMenuItem::persistFromMenuArray()');
@@ -74,3 +74,35 @@ $t->info('5 - Test the cache invalidation');
   $children[0]->setRoute('http://www.doctrine-project.org');
   $children[0]->save();
   $t->is($manager->getCacheDriver()->has($cacheKey), false, 'The cache is now unset.');
+
+$t->info('6 - Test restoreTreeFromNestedArray()');
+  $tbl->createQuery()->delete()->execute();
+  extract(create_doctrine_test_tree($t));
+
+  $newOrder = array(
+    array(
+      'id' => $pt2->id,
+      'children' => array(
+        array(
+          'id' => $ch4->id,
+          'children' => array(
+            array('id' => $gc1->id),
+          )
+        ),
+      )
+    ),
+    array(
+      'id' => $pt1->id,
+      'children' => array(
+        array('id' => $ch3->id),
+        array('id' => $ch1->id),
+        array('id' => $ch2->id),
+      )
+    )
+  );
+
+  $tbl->restoreTreeFromNestedArray($newOrder, $rt);
+  root_sanity_check($t, $rt);    
+  check_child_ordering($t, $rt, array(), array('Parent 2', 'Parent 1'));
+  check_child_ordering($t, $rt, array(0), array('Child 4'));
+  check_child_ordering($t, $rt, array(1), array('Child 3', 'Child 1', 'Child 2'));

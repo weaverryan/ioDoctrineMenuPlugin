@@ -119,7 +119,7 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
    * @return void
    * @author Brent Shaffer
    */
-  public function clearTree($root)
+  public function clearTree(ioDoctrineMenuItem $root)
   {
     $nodes = $this->createQuery()
       ->where('root_id = ?', $root['id'])
@@ -142,34 +142,46 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
    * @return void
    * @author Brent Shaffer
    */
-  public function restoreTreeFromNestedArray($arr, $name)
+  public function restoreTreeFromNestedArray($arr, ioDoctrineMenuItem $root)
   {
-    $root = $this->fetchRootByName($name);
+    if (!$root->getNode()->isRoot())
+    {
+      throw new sfException('ioDoctrineMenuItemTable::restoreTreeFromNestedArray() must be called using a root node.');
+    }
 
+    // remove all of the nodes from the tree
     $this->clearTree($root);
 
-    Doctrine::getTable('ioDoctrineMenuItem')->getTree()->createRoot($root);
-    
-    $this->restoreBranchFromNestedArray(array('id' => $root['id'], 'children' => $arr));
+    // reestablish the root
+    $this->getTree()->createRoot($root);
+
+    // put the nodes back on
+    $this->restoreBranchFromNestedArray(array('menu' => $root, 'children' => $arr));
   }
-  
+
   /**
-   * recursive function to create a nested set from an array
+   * recursive function to create a nested set sourced from an array
    *
-   * @param string $arr
-   * @return void
+   * @param array $arr The source array with keys menu and children
+   * @return ioDoctrineMenuItem
    * @author Brent Shaffer
    */
   public function restoreBranchFromNestedArray($arr)
   {
-    $parent = Doctrine::getTable('ioDoctrineMenuItem')->findOneById($arr['id']);
+    $parent = $arr['menu'];
 
-    if (isset($arr['children'])) 
+    if (isset($arr['children']))
     {
-      foreach ($arr['children'] as $childArr) 
+      foreach ($arr['children'] as $childArr)
       {
-        $child = Doctrine::getTable('ioDoctrineMenuItem')->findOneById($childArr['id']);
+        $child = $this->find($childArr['id']);
         $child->getNode()->insertAsLastChildOf($parent);
+
+        // put the child object into the array
+        $childArr['menu'] = $child;
+        unset($childArr['id']);
+
+        // recurse down and ultimately refresh the parent
         $this->restoreBranchFromNestedArray($childArr);
         $parent->refresh();
       }
