@@ -87,6 +87,7 @@ class ioDoctrineMenuPluginConfiguration extends sfPluginConfiguration
       array(
         'module'  => 'io_doctrine_menu',
         'action'  => 'json',
+        'sf_format' => 'json',
       ),
       array(
         'sf_method' => array('get'),

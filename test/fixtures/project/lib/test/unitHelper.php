@@ -240,3 +240,36 @@ function check_child_ordering(lime_test $t, ioDoctrineMenuItem $rt, $path, array
 
   $t->is($childNameArray, $ordering, 'The children are ordered correctly: '. implode(',', $childNameArray));
 }
+
+// returns an array that closely mimics what's posted from the Nested Sortable widget
+// $arr is the return value from create_doctrine_test_tree()
+function get_nested_set_save_array(array $arr)
+{
+  extract($arr);
+
+  $arr = array(
+    array(
+      'id' => $pt2->id,
+      'children' => array(
+        array(
+          'id' => $ch4->id,
+          'children' => array(
+            array('id' => $gc1->id),
+          )
+        ),
+      )
+    ),
+    array(
+      'id' => $pt1->id,
+      'children' => array(
+        array('id' => $ch3->id),
+        array('id' => $ch1->id),
+        array('id' => $ch2->id),
+      )
+    )
+  );
+
+  return array(
+    'items' => $arr
+  );
+}

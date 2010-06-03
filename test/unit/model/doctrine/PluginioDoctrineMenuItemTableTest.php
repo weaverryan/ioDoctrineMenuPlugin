@@ -77,29 +77,11 @@ $t->info('5 - Test the cache invalidation');
 
 $t->info('6 - Test restoreTreeFromNestedArray()');
   $tbl->createQuery()->delete()->execute();
-  extract(create_doctrine_test_tree($t));
+  $arr = create_doctrine_test_tree($t);
+  extract($arr);
 
-  $newOrder = array(
-    array(
-      'id' => $pt2->id,
-      'children' => array(
-        array(
-          'id' => $ch4->id,
-          'children' => array(
-            array('id' => $gc1->id),
-          )
-        ),
-      )
-    ),
-    array(
-      'id' => $pt1->id,
-      'children' => array(
-        array('id' => $ch3->id),
-        array('id' => $ch1->id),
-        array('id' => $ch2->id),
-      )
-    )
-  );
+  $newOrder = get_nested_set_save_array($arr);
+  $newOrder = $newOrder['items'];
 
   $tbl->restoreTreeFromNestedArray($newOrder, $rt);
   root_sanity_check($t, $rt);    
