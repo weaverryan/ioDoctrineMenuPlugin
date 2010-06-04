@@ -12,4 +12,9 @@ class testActions extends sfActions
     $this->setLayout(false);
     return sfView::NONE;
   }
+
+  // test for using the get_doctrine_menu() helper
+  public function executeUseHelper(sfWebRequest $request)
+  {
+  }
 }

@@ -9,3 +9,7 @@ homepage:
 actions_get_menu:
   url:   /actions/get-menu
   param: { module: test, action: getMenu }
+
+helper_get_menu:
+  url:   /helper/get-menu
+  param: { module: test, action: useHelper }
