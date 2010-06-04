@@ -17,6 +17,9 @@ class ioDoctrineMenuPluginConfiguration extends sfPluginConfiguration
     {
       $this->dispatcher->connect('routing.load_configuration', array($this, 'loadRoutes'));
     }
+
+    $actions = new ioDoctrineMenuActions($this);
+    $this->dispatcher->connect('component.method_not_found', array($actions, 'extend'));
   }
 
   /**
