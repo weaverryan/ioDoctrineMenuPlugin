@@ -35,15 +35,14 @@ the actions:
 
     public function executeIndex(sfWebRequest $request)
     {
-      $this->menu = $this->getContext()
-        ->getConfiguration()
-        ->getPluginConfiguration('ioDoctrineMenuPlugin')
-        ->getMenuManager()
-        ->getMenu('admin');
+      $this->menu = $this->getDoctrineMenu('admin');
     }
 
-Finally, the plugin comes packaged with an admin module that allows for
-reordering and sorting of the menus via jQuery's Nested Sortable widget. 
+You may also retrieve menus in the view, which also enables the automatic
+caching:
+
+    <?php use_helper('DoctrineMenu') ?>
+    <?php $menu = get_doctrine_menu('admin') ?>
 
 Care to Contribute?
 -------------------
