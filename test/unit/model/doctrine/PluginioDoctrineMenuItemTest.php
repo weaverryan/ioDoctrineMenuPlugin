@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../../../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(183);
+$t = new lime_test(188);
 
 $t->info('1 - Test getChildrenIndexedByName().');
   extract(create_doctrine_test_tree($t)); // create the tree and make its vars accessible
@@ -354,3 +354,24 @@ $t->info('4 - Test generateNestedSortableArray()');
   */
 
   $t->is($result['items'][0], $expected['items'][0], '->generateNestedSortableArray() returns the correctly formatted array.');
+
+$t->info('5 - Test the i18n functionality');
+  $t->info('  5.1 - Create an ioMenuItem with i18n labels and persist it');
+
+  Doctrine_Query::create()->from('ioDoctrineMenuItem')->delete()->execute();
+  sfConfig::set('sf_default_culture', 'en'); // make sure en is the default culture
+  $menu = new ioMenuItem('primary');
+  $menu->setLabel('Homepage');
+  $menu->setLabel('Página principal', 'es');
+  $doctrineMenu = Doctrine_Core::getTable('ioDoctrineMenuItem')->persist($menu);
+
+  $t->is($doctrineMenu['Translation']['en']['label'], 'Homepage', 'The default label is set on the sf_default_culture Translation.');
+  $t->is($doctrineMenu['Translation']['es']['label'], 'Página principal', 'The es label was saved on the es Translation.');
+
+  $t->info('  5.2 - Fetch an i18n menu from the database');
+  $menu = Doctrine_Core::getTable('ioDoctrineMenuItem')->fetchMenu('primary');
+  $arr = $menu->toArray();
+  $t->is($arr['label'], 'Homepage', 'The sf_default_culture is set as the default label.');
+  $t->is($arr['i18n_labels'], array('en' => 'Homepage', 'es' => 'Página principal'), 'The i18n labels are loaded in correctly from the database.');
+  $menu->setCulture('es');
+  $t->is($menu->getLabel(), 'Página principal', 'For good measure, we can see that the spanish translation of the menu returns the spanish translation.');
