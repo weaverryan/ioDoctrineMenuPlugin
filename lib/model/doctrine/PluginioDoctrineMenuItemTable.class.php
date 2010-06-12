@@ -213,4 +213,15 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
       ->orderBy('m.root_id ASC')
       ->addOrderBy('m.lft ASC');
   }
+
+  /**
+   * Used in the admin for building the drop-down of potential "parents"
+   * for a given menu item.
+   *
+   * @return Doctrine_Query
+   */
+  public function getParentIdQuery()
+  {
+    return $this->createQuery('m');
+  }
 }

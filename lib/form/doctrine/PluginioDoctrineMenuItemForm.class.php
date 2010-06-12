@@ -64,5 +64,46 @@ abstract class PluginioDoctrineMenuItemForm extends BaseioDoctrineMenuItemForm
         $this->widgetSchema->setLabel($culture, $name);
       }
     }
+
+
+    // add the parent_id positioning function
+    $q = $this->getObject()->getTable()->getParentIdQuery();
+    if (!$this->getObject()->isNew())
+    {
+      $q->andWhere('m.id != ?', $this->object->id);
+    }
+
+    $this->widgetSchema['parent_id'] = new sfWidgetFormDoctrineChoice(array(
+      'model' => 'ioDoctrineMenuItem',
+      'add_empty' => '',
+      'order_by' => array('root_id, lft', ''),
+      'query' => $q,
+      'method' => 'getIndentedName'
+      ));
+    $this->validatorSchema['parent_id'] = new sfValidatorDoctrineChoice(array(
+      'required' => true,
+      'model' => 'ioDoctrineMenuItem'
+      ));
+    $this->setDefault('parent_id', $this->object->getParentId());
+    $this->widgetSchema->setLabel('parent_id', 'Child of');
+  }
+
+  /**
+   * Overridden to move or position the menu item if necessary
+   */
+  protected function doSave($con = null)
+  {
+    parent::doSave($con);
+
+    $node = $this->object->getNode();
+    $parentId = $this->getValue('parent_id');
+
+    if ($parentId != $this->object->getParentId() || !$node->isValidNode())
+    {
+      //form validation ensures an existing ID for $this->parentId
+      $parent = $this->object->getTable()->find($parentId);
+      $method = ($node->isValidNode() ? 'move' : 'insert') . 'AsLastChildOf';
+      $node->$method($parent); //calls $this->object->save internally
+    }
   }
 }

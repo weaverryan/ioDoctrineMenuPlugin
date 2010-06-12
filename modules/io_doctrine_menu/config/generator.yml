@@ -16,22 +16,24 @@ generator:
       fields:
         indented_name:  { label: Name }
       list:
-        display:   [lft, rgt, indented_name, RootMenuItem, level, route, requires_auth, requires_no_auth, created_at]
+        display:        [lft, rgt, indented_name, RootMenuItem, level, route, requires_auth, requires_no_auth, created_at]
         object_actions:
           _edit:    ~
           _delete:  ~
           reorder:
             name:   Reorder menu
             action: reorder
-      filter:  ~
+      filter:
+        display:    [name, root_id, route, requires_auth, requires_no_auth, created_at]
       form:
         display:
 <?php if (Doctrine_Core::getTable('ioDoctrineMenuItem')->isI18n()): ?>
-          "General Info": [name, route, attributes]
-          "Labels":       [<?php echo implode(', ', array_keys(sfConfig::get('app_doctrine_menu_i18n_cultures', array()))) ?>]
+          General:      [name, route, attributes]
+          Labels:       [<?php echo implode(', ', array_keys(sfConfig::get('app_doctrine_menu_i18n_cultures', array()))) ?>]
 <?php else: ?>
-          "General Info": [name, label, route, attributes]
+          General:      [name, label, route, attributes]
 <?php endif; ?>
-          "Security":     [requires_auth, requires_no_auth, permissions_list]
+          Position:     [parent_id]
+          Security:     [requires_auth, requires_no_auth, permissions_list]
       edit:    ~
       new:     ~

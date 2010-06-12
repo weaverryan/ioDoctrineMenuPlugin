@@ -475,6 +475,25 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
    */
   public function getIndentedName()
   {
-    return str_repeat('-', $this->getLevel()) . ' ' . $this->getName().($this->getLevel() == 0 ? ' ('.$this->getName().')':null);
+    return str_repeat('-- ', $this->getLevel()) . ' ' . $this->getName().($this->getLevel() == 0 ? ' ('.$this->getName().')':null);
+  }
+
+  /**
+   * Shortcut method to determine the id of the parent menu item
+   *
+   * @return integer|null
+   */
+  public function getParentId()
+  {
+    $node = $this->getNode();
+
+    if (!$node->isValidNode() || $node->isRoot())
+    {
+      return null;
+    }
+
+    $parent = $node->getParent();
+
+    return $parent['id'];
   }
 }
