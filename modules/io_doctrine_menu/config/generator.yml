@@ -28,12 +28,11 @@ generator:
       form:
         display:
 <?php if (Doctrine_Core::getTable('ioDoctrineMenuItem')->isI18n()): ?>
-          General:      [name, route, attributes]
+          General:      [name, _parent_id, route, attributes]
           Labels:       [<?php echo implode(', ', array_keys(sfConfig::get('app_doctrine_menu_i18n_cultures', array()))) ?>]
 <?php else: ?>
-          General:      [name, label, route, attributes]
+          General:      [name, _parent_id, label, route, attributes]
 <?php endif; ?>
-          Position:     [parent_id]
           Security:     [requires_auth, requires_no_auth, permissions_list]
       edit:    ~
       new:     ~

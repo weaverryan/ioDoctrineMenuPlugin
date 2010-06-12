@@ -35,6 +35,7 @@ abstract class PluginioDoctrineMenuItemForm extends BaseioDoctrineMenuItemForm
 
     $this->widgetSchema->setLabel('attributes', 'HTML attributes');
     $this->widgetSchema->setHelp('attributes', '(e.g. title="my menu" class="homepage"');
+    $this->widgetSchema['attributes']->setAttribute('size', 72);
 
     $this->widgetSchema->setLabel('route', 'Route/Url');
     $this->widgetSchema->setHelp('route', '(e.g. @homepage or http://www.google.com');
@@ -66,26 +67,34 @@ abstract class PluginioDoctrineMenuItemForm extends BaseioDoctrineMenuItemForm
     }
 
 
-    // add the parent_id positioning function
-    $q = $this->getObject()->getTable()->getParentIdQuery();
-    if (!$this->getObject()->isNew())
+    /*
+     * Add the parent_id parent node functionality if this is a new item
+     */
+    if ($this->isNew())
     {
-      $q->andWhere('m.id != ?', $this->object->id);
-    }
+      $q = $this->getObject()->getTable()->getParentIdQuery();
+      if (!$this->getObject()->isNew())
+      {
+        $q->andWhere('m.id != ?', $this->object->id);
+      }
 
-    $this->widgetSchema['parent_id'] = new sfWidgetFormDoctrineChoice(array(
-      'model' => 'ioDoctrineMenuItem',
-      'add_empty' => '',
-      'order_by' => array('root_id, lft', ''),
-      'query' => $q,
-      'method' => 'getIndentedName'
-      ));
-    $this->validatorSchema['parent_id'] = new sfValidatorDoctrineChoice(array(
-      'required' => true,
-      'model' => 'ioDoctrineMenuItem'
-      ));
-    $this->setDefault('parent_id', $this->object->getParentId());
-    $this->widgetSchema->setLabel('parent_id', 'Child of');
+      $model = get_class($this->getObject());
+      // if new, blank means new root, else is just blank and we require the field
+      $this->widgetSchema['parent_id'] = new sfWidgetFormDoctrineChoice(array(
+        'model' => $model,
+        'add_empty' => 'New root menu item',
+        'order_by' => array('root_id, lft', ''),
+        'query' => $q,
+        'method' => 'getIndentedName',
+        ));
+      $this->validatorSchema['parent_id'] = new sfValidatorDoctrineChoice(array(
+        'required' => false,
+        'model' => $model,
+        ));
+      $this->setDefault('parent_id', $this->object->getParentId());
+      $this->widgetSchema->setLabel('parent_id', 'Child of');
+      $this->widgetSchema->setHelp('parent_id', 'Choose the parent menu item for this new menu or create it as a root. After saving, you can continue to reorder the menu item.');
+    }
   }
 
   /**
@@ -98,12 +107,19 @@ abstract class PluginioDoctrineMenuItemForm extends BaseioDoctrineMenuItemForm
     $node = $this->object->getNode();
     $parentId = $this->getValue('parent_id');
 
-    if ($parentId != $this->object->getParentId() || !$node->isValidNode())
+    if ($this->isNew())
     {
-      //form validation ensures an existing ID for $this->parentId
-      $parent = $this->object->getTable()->find($parentId);
-      $method = ($node->isValidNode() ? 'move' : 'insert') . 'AsLastChildOf';
-      $node->$method($parent); //calls $this->object->save internally
+      if (!$parentId)
+      {
+        // we're new and we have no parent id, so save as root
+        $this->getObject()->getTable()->getTree()->createRoot($this->getObject()); //calls $this->object->save internally
+      }
+      else
+      {
+        //form validation ensures an existing ID for $this->parentId
+        $parent = $this->object->getTable()->find($parentId);
+        $node->insertAsLastChildOf($parent); //calls $this->object->save internally
+      }
     }
   }
 }
