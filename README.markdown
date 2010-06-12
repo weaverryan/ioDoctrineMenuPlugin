@@ -8,7 +8,7 @@ This plugin also comes with an admin module to edit the menu items. The
 admin module is complete with draggable ordering of the menu items.
 
 The majority of the documentation can be found on the `ioMenuItemPlugin`
-[http://github.com/weaverryan/ioMenuPlugin/tree/master/docs/](here).
+[Menu Reference Manual](http://github.com/weaverryan/ioMenuPlugin/tree/master/docs/).
 
 Introduction
 ------------
