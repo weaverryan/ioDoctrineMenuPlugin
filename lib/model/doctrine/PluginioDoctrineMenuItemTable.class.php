@@ -95,7 +95,9 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
     }
 
     // merge in the menu data into the parent menu
-     $parent->persistFromMenuArray($menu->toArray());
+    $parent->persistFromMenuArray($menu->toArray());
+
+    return $parent;
   }
 
   /**
