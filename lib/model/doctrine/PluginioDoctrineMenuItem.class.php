@@ -173,6 +173,31 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
     sfApplicationConfiguration::getActive()->loadHelpers('Tag');
     $data['attributes'] = trim(_tag_options($data['attributes']));
 
+    // convert labels into i18n format
+    if ($this->getTable()->isI18n())
+    {
+      $data['Translation'] = array();
+
+      // if a label is set on the menu, set it on the Translation for the default culture
+      if (isset($data['label']))
+      {
+        $defaultCulture = sfConfig::get('sf_default_culture');
+        $data['Translation'][$defaultCulture]['label'] = $data['label'];
+        unset($data['label']);
+      }
+
+      // process any actual i18n labels if any are set
+      if (isset($data['i18n_labels']))
+      {
+        foreach ($data['i18n_labels'] as $culture => $label)
+        {
+          $data['Translation'][$culture]['label'] = $label;
+        }
+
+        unset($data['i18n_labels']);
+      }
+    }
+
     return $data;
   }
 
@@ -277,7 +302,7 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
   {
     $q = Doctrine_Query::create()
       ->from('ioDoctrineMenuItem m INDEXBY m.name')
-      ->select('m.name, m.class, m.label, m.route, m.attributes, m.requires_auth, m.requires_no_auth, m.level, c.name')
+      ->select('m.name, m.class, m.route, m.attributes, m.requires_auth, m.requires_no_auth, m.level, c.name')
       ->leftJoin('m.Permissions c')
       ->where('m.root_id = ?', $this['id']);
 
@@ -332,10 +357,27 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
       unset($data['Permissions']);
     }
 
+    // handle i18n
     if (isset($data['Translation']))
     {
-      $data['label'] = $data['Translation']['label'];
+      // we have i18n, so create an array of i18n labels
+      $i18nLabels = array();
+      foreach ($data['Translation'] as $culture => $i18nData)
+      {
+        if ($i18nData['label'])
+        {
+          $i18nLabels[$culture] = $i18nData['label'];
+        }
+      }
+      $data['i18n_labels'] = $i18nLabels;
       unset($data['Translation']);
+
+      // try to set the default label from the default culture
+      $defaultCulture = sfConfig::get('sf_default_culture');
+      if (isset($i18nLabels[$defaultCulture]))
+      {
+        $data['label'] = $i18nLabels[$defaultCulture];
+      }
     }
 
     // convert the attributes back into an array
