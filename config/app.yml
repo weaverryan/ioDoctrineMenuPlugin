@@ -4,8 +4,8 @@ all:
     use_i18n: false
     # array of cultures that will be shown in the admin module
     i18n_cultures: []
-    #en:   English
-    #fr:   Français
+    #  en:   English
+    #  fr:   Français
 
     # The routing prefix to use for the menu admin module
     module_prefix:  /admin/menu
