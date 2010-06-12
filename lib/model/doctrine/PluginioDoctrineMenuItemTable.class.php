@@ -107,6 +107,9 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
   public function fetchRootByName($name)
   {
     return $this->createQuery('m')
+      ->select('m.*')
+      ->leftJoin('m.Permissions p')
+      ->addSelect('p.id, p.name')
       ->where('m.lft = ?', 1)
       ->andWhere('m.name = ?', $name)
       ->fetchOne();
