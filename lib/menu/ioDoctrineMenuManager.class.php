@@ -24,7 +24,7 @@ class ioDoctrineMenuManager
    * @param  string $name The name of the root node to retrieve
    * @return ioMenuItem|null
    */
-  public function getMenu($name)
+  public function getMenu($name, $class = 'ioDoctrineMenuItem')
   {
     $cacheKey = md5($name);
     if ($data = $this->getCache($cacheKey))
@@ -34,7 +34,7 @@ class ioDoctrineMenuManager
       return ioMenuItem::createFromArray($data);
     }
 
-    $menu = Doctrine_Core::getTable('ioDoctrineMenuItem')->fetchMenu($name);
+    $menu = Doctrine_Core::getTable($class)->fetchMenu($name);
 
     if ($menu)
     {

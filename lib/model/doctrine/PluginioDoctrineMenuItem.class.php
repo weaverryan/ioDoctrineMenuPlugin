@@ -102,7 +102,8 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
         }
         else
         {
-          $doctrineChild = new ioDoctrineMenuItem();
+          $class = $this->getTable()->getClassnameToReturn();
+          $doctrineChild = new $class();
           $doctrineChild->name = $name;
 
           // see class note about updating node values
@@ -120,7 +121,7 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
          */
         if ($reorder)
         {
-          Doctrine_Query::create()->from('ioDoctrineMenuItem')->fetchOne();
+          $this->getTable()->createQuery('m')->fetchOne();
         }
 
         // call the persist recursively onto this item and its children

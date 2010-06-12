@@ -85,7 +85,8 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
       if (!$root)
       {
         // create a new root
-        $root = new ioDoctrineMenuItem();
+        $class = $this->getClassnameToReturn(); // allow for inheritance
+        $root = new $class();
         $root->name = $menu->getName();
         $root->save();
         $this->getTree()->createRoot($root);
