@@ -1,10 +1,7 @@
 ioDoctrineMenuPlugin
 ====================
 
-### This plugins is fully-functional and tested, but is still missing some features.
-
-I'll be releasing a first, finished release before June 10th. The majority
-of the documentation can be found on the `ioMenuItemPlugin`
+The majority of the documentation can be found on the `ioMenuItemPlugin`
 [http://github.com/weaverryan/ioMenuPlugin/tree/master/docs/](here).
 
 Quick documentation
