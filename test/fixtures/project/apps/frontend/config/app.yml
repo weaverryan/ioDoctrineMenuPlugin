@@ -5,6 +5,9 @@
 all:
   doctrine_menu:
     use_i18n:   true
+    i18n_cultures:
+      en:       English
+      es:       Español
 
     # The routing prefix to use for the menu admin module
     module_prefix:  /test/menu

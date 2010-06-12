@@ -8,7 +8,7 @@
         <li class="sf_admin_action_new"><?php echo link_to('New', 'io_doctrine_menu_new') ?></li>
       </ul>
 
-      <?php include_partial('io_doctrine_menu/list', array('menu' => $menu)) ?>
+      <?php include_partial('io_doctrine_menu/reorderList', array('menu' => $menu)) ?>
     </div>
 
   </div>

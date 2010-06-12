@@ -1,0 +1,37 @@
+generator:
+  class: sfDoctrineGenerator
+  param:
+    model_class:           ioDoctrineMenuItem
+    theme:                 admin
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          io_doctrine_menu
+    with_doctrine_route:   true
+    actions_base_class:    sfActions
+
+    config:
+      actions:
+      fields:
+        indented_name:  { label: Name }
+      list:
+        display:   [lft, rgt, indented_name, RootMenuItem, level, route, requires_auth, requires_no_auth, created_at]
+        object_actions:
+          _edit:    ~
+          _delete:  ~
+          reorder:
+            name:   Reorder menu
+            action: reorder
+      filter:  ~
+      form:
+        display:
+<?php if (Doctrine_Core::getTable('ioDoctrineMenuItem')->isI18n()): ?>
+          "General Info": [name, route, attributes]
+          "Labels":       [<?php echo implode(', ', array_keys(sfConfig::get('app_doctrine_menu_i18n_cultures', array()))) ?>]
+<?php else: ?>
+          "General Info": [name, label, route, attributes]
+<?php endif; ?>
+          "Security":     [requires_auth, requires_no_auth, permissions_list]
+      edit:    ~
+      new:     ~

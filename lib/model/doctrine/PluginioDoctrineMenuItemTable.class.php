@@ -199,4 +199,18 @@ class PluginioDoctrineMenuItemTable extends Doctrine_Table
   {
     return $this->hasTemplate('Doctrine_Template_I18n');
   }
+
+  /**
+   * Used by the admin module, this attempts to retrieve the menu items
+   * in an order so that the different trees are segregated and each
+   * tree is drawn out in its natural tree order.
+   *
+   * @return Doctrine_Query
+   */
+  public function getOrderedTreeQuery()
+  {
+    return $this->createQuery('m')
+      ->orderBy('m.root_id ASC')
+      ->addOrderBy('m.lft ASC');
+  }
 }

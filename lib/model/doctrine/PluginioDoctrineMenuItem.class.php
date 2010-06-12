@@ -466,4 +466,15 @@ abstract class PluginioDoctrineMenuItem extends BaseioDoctrineMenuItem
 
     return false;
   }
+
+  /**
+   * Used in the admin generator to space out the names so that they
+   * have a hierarchy feel
+   *
+   * @return string
+   */
+  public function getIndentedName()
+  {
+    return str_repeat('-', $this->getLevel()) . ' ' . $this->getName().($this->getLevel() == 0 ? ' ('.$this->getName().')':null);
+  }
 }

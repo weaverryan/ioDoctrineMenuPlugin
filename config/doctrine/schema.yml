@@ -26,7 +26,6 @@ ioDoctrineMenuItem:
       class:        ioDoctrineMenuItem
       onDelete:     CASCADE
       autoComplete: false
-      onDelete:     CASCADE
     Permissions:
       class:        sfGuardPermission
       local:        menu_item_id
