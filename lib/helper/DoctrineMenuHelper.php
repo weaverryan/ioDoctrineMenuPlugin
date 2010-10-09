@@ -20,5 +20,5 @@ function get_doctrine_menu($name)
   return sfApplicationConfiguration::getActive()
     ->getPluginConfiguration('ioDoctrineMenuPlugin')
     ->getMenuManager()
-    ->getMenu('Root li');
+    ->getMenu($name);
 }
