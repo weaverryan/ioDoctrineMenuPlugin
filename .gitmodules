@@ -1,6 +1,3 @@
 [submodule "test/fixtures/project/plugins/ioMenuPlugin"]
 	path = test/fixtures/project/plugins/ioMenuPlugin
 	url = git://github.com/weaverryan/ioMenuPlugin.git
-[submodule "test/fixtures/project/plugins/sfDoctrineGuardPlugin"]
-	path = test/fixtures/project/plugins/sfDoctrineGuardPlugin
-	url = git://github.com/annismckenzie/sfDoctrineGuardPlugin.git
